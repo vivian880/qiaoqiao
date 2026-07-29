@@ -91,19 +91,19 @@ body {
 }
 
 /* ===== 角色动画：让两位人物更有"活气" ===== */
-/* 入场：从下方轻轻弹入（淡入+上移+微放大），两人错开节奏更自然 */
+/* 入场：仅淡入，不做位移/缩放，避免反复重渲染时再"弹"一下 */
 @keyframes popIn {
-  from { opacity: 0; transform: translateY(16px) scale(.92); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
-/* 待机：轻微上下浮沉 + 极小幅度摇摆（以脚为支点，不会飘出画面）*/
+/* 待机：极轻微的呼吸式上下浮动，去掉旋转（旋转最易引起眩晕），放慢节奏 */
 @keyframes qiaoFloat {
-  0%,100% { transform: translateY(0) rotate(-1.2deg); }
-  50%     { transform: translateY(-5px) rotate(1.2deg); }
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-2px); }
 }
 @keyframes cherryFloat {
-  0%,100% { transform: translateY(0) rotate(3deg); }
-  50%     { transform: translateY(-3px) rotate(-3deg); }
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-1.5px); }
 }
 /* 邱少云点击互动：俏皮小跳 + 敬礼式倾斜 */
 @keyframes qiaoHop {
@@ -121,9 +121,9 @@ body {
   transform-origin: bottom center;
   will-change: transform;
 }
-/* 两人待机不同步（4.2s / 3.4s），更显灵动 */
-.qiao-char img { animation: qiaoFloat 4.2s ease-in-out infinite; }
-.cherry-char img { animation: cherryFloat 3.4s ease-in-out infinite; }
+/* 两人待机极轻微、慢节奏（6.5s / 5.5s），不同步更自然，且不旋转防眩晕 */
+.qiao-char img { animation: qiaoFloat 6.5s ease-in-out infinite; }
+.cherry-char img { animation: cherryFloat 5.5s ease-in-out infinite; }
 /* 邱少云被点击时的小跳（覆盖待机动画）*/
 .qiao-char.tap img { animation: qiaoHop .6s ease; }
 
