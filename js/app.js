@@ -57,7 +57,7 @@
     return `
       <div class="scene-wrap">
         <div class="scene-stage">
-          <div class="scene-char qiao-char">
+          <div class="scene-char qiao-char" data-action="click-qiao">
             <img src="img/qiaoqiao.png" onerror="this.onerror=null;this.src='images/qiaoqiao.png'" alt="邱少云">
           </div>
           <div class="scene-char cherry-char">
@@ -646,6 +646,15 @@
               setTimeout(() => renderHome(), 4800)
             } else { toast('樱桃蹭了蹭你 🐾 子弹 +' + add); renderHome() }
           } else toast('樱桃今天已经奖励过啦~')
+          break
+        }
+        case 'click-qiao': {
+          // 邱少云被点击：俏皮小跳（重新触发动画）
+          el.classList.remove('tap')
+          void el.offsetWidth // 强制 reflow，确保动画可重复触发
+          el.classList.add('tap')
+          setTimeout(() => el.classList.remove('tap'), 520)
+          toast('邱少云给你敬了个礼 🫡')
           break
         }
         case 'buy': {
