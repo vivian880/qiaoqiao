@@ -101,9 +101,12 @@ body {
   0%,100% { transform: translateY(0); }
   50%     { transform: translateY(-2px); }
 }
+/* 樱桃待机：小幅上下浮动 + 左右轻轻摇摆，明显但不晕（无旋转）*/
 @keyframes cherryFloat {
-  0%,100% { transform: translateY(0); }
-  50%     { transform: translateY(-1.5px); }
+  0%,100% { transform: translateY(0) translateX(0); }
+  25%     { transform: translateY(-4px) translateX(-3px); }
+  50%     { transform: translateY(-5px) translateX(0); }
+  75%     { transform: translateY(-4px) translateX(3px); }
 }
 /* 邱少云点击互动：俏皮小跳 + 敬礼式倾斜 */
 @keyframes qiaoHop {
@@ -121,9 +124,9 @@ body {
   transform-origin: bottom center;
   will-change: transform;
 }
-/* 两人待机极轻微、慢节奏（6.5s / 5.5s），不同步更自然，且不旋转防眩晕 */
+/* 两人待机：邱少云极轻微慢节奏呼吸；樱桃稍快、带左右晃，更显灵动 */
 .qiao-char img { animation: qiaoFloat 6.5s ease-in-out infinite; }
-.cherry-char img { animation: cherryFloat 5.5s ease-in-out infinite; }
+.cherry-char img { animation: cherryFloat 4.2s ease-in-out infinite; }
 /* 邱少云被点击时的小跳（覆盖待机动画）*/
 .qiao-char.tap img { animation: qiaoHop .6s ease; }
 
