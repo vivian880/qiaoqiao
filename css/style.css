@@ -89,7 +89,49 @@ body {
   0%,100% { transform: translateY(0) scale(1); }
   50% { transform: translateY(-6px) scale(1.02); }
 }
-@media (prefers-reduced-motion: reduce) { .cherry-char.eating img { animation: none; } }
+
+/* ===== 角色动画：让两位人物更有"活气" ===== */
+/* 入场：从下方轻轻弹入（淡入+上移+微放大），两人错开节奏更自然 */
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(16px) scale(.92); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+/* 待机：轻微上下浮沉 + 极小幅度摇摆（以脚为支点，不会飘出画面）*/
+@keyframes qiaoFloat {
+  0%,100% { transform: translateY(0) rotate(-1.2deg); }
+  50%     { transform: translateY(-5px) rotate(1.2deg); }
+}
+@keyframes cherryFloat {
+  0%,100% { transform: translateY(0) rotate(3deg); }
+  50%     { transform: translateY(-3px) rotate(-3deg); }
+}
+/* 邱少云点击互动：俏皮小跳 + 敬礼式倾斜 */
+@keyframes qiaoHop {
+  0%   { transform: translateY(0) rotate(0); }
+  30%  { transform: translateY(-15px) rotate(-4deg); }
+  60%  { transform: translateY(0) rotate(3deg); }
+  100% { transform: translateY(0) rotate(0); }
+}
+.qiao-char, .cherry-char {
+  transform-origin: bottom center;
+  animation: popIn .6s ease-out both;
+}
+.qiao-char img, .cherry-char img {
+  transform-origin: bottom center;
+  will-change: transform;
+}
+/* 两人待机不同步（4.2s / 3.4s），更显灵动 */
+.qiao-char img { animation: qiaoFloat 4.2s ease-in-out infinite; }
+.cherry-char img { animation: cherryFloat 3.4s ease-in-out infinite; }
+/* 邱少云被点击时的小跳（覆盖待机动画）*/
+.qiao-char.tap img { animation: qiaoHop .5s ease; }
+
+/* 尊重"减少动效"系统偏好：全部关闭动画 */
+@media (prefers-reduced-motion: reduce) {
+  .qiao-char, .cherry-char,
+  .qiao-char img, .cherry-char img { animation: none !important; }
+  .cherry-char.eating img { animation: none !important; }
+}
 
 .shop-btn { margin-top: 6px; }
 .foot-tip { text-align: center; color: #cfe0c5; font-size: 12px; padding: 6px; }
