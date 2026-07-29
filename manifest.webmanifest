@@ -1,0 +1,15 @@
+{
+  "name": "邱少云小八路与警犬樱桃",
+  "short_name": "樱桃警犬",
+  "description": "二年级学习任务养成小程序：做任务赚子弹，养一只叫樱桃的警犬。",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#4A6B3D",
+  "theme_color": "#4A6B3D",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
