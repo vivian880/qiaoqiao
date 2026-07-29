@@ -653,7 +653,7 @@
           el.classList.remove('tap')
           void el.offsetWidth // 强制 reflow，确保动画可重复触发
           el.classList.add('tap')
-          setTimeout(() => el.classList.remove('tap'), 520)
+          setTimeout(() => el.classList.remove('tap'), 620)
           toast('邱少云给你敬了个礼 🫡')
           break
         }
