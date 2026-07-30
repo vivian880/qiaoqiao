@@ -1,7 +1,7 @@
 // 邱少云小八路 Service Worker —— 让网站可被"安装"为全屏 PWA 应用
 // network-first：每次优先取网络最新内容（保证部署即生效），网络失败再用缓存兜底（离线可用）
 // 注意：fetch 用 {cache:'reload'} 绕过浏览器 HTTP 缓存，确保部署后立即生效，避免 PWA 一直显示旧页面
-const CACHE = 'qiaoqiao-v39'
+const CACHE = 'qiaoqiao-v40'
 
 self.addEventListener('install', function (e) {
   self.skipWaiting()

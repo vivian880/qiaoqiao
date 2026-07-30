@@ -482,7 +482,7 @@
       h += `<div class="${cls}">
         <div class="coll-icon"><img src="${it.img}" alt="${it.name}" onerror="this.onerror=null;this.outerHTML='${it.icon}'"></div>
         <div class="coll-name">${it.name}</div>
-        ${owned ? '<div class="coll-tag">已收藏</div>' : '<div class="coll-price">🔸 ' + it.price + '</div>'}
+        ${owned ? '<div class="coll-tag">已收藏</div>' : ''}
         ${btn}
       </div>`
     })
