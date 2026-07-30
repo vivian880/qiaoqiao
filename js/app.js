@@ -411,7 +411,7 @@
       const afford = u.totalScore >= it.price
       const btn = afford
         ? `<div class="shop-buy" data-action="buy" data-id="${it.id}">兑换 🔸${it.price}</div>`
-        : `<div class="shop-buy disabled" data-action="buy-poor">需 ${it.price}🔸</div>`
+        : `<div class="shop-buy disabled" data-action="buy-poor">${it.price}🔸</div>`
       h += `<div class="shop-item">
         <div class="shop-icon"><img src="${it.img}" alt="${it.name}" onerror="this.onerror=null;this.outerHTML='${it.icon}'"></div>
         <div class="shop-name">${it.name}</div>
@@ -453,7 +453,7 @@
       let btn
       if (!owned) btn = afford
         ? `<div class="shop-buy" data-action="buy-equip" data-id="${it.id}">兑换 🔸${it.price}</div>`
-        : `<div class="shop-buy disabled" data-action="buy-poor">需 ${it.price}🔸</div>`
+        : `<div class="shop-buy disabled" data-action="buy-poor">${it.price}🔸</div>`
       else if (on) btn = `<div class="shop-owned on" data-action="toggle-equip" data-id="${it.id}">✅ 已穿戴 · 点击脱下</div>`
       else btn = `<div class="shop-owned off" data-action="toggle-equip" data-id="${it.id}">✅ 已拥有 · 点击穿戴</div>`
       const cls = 'shop-item' + (on ? ' equipped' : '')
@@ -477,7 +477,7 @@
       if (owned) btn = `<div class="coll-owned">✅ 已收藏</div>`
       else btn = afford
         ? `<div class="shop-buy" data-action="buy-weapon" data-id="${it.id}">解锁 🔸${it.price}</div>`
-        : `<div class="shop-buy disabled" data-action="buy-poor">需 ${it.price}🔸</div>`
+        : `<div class="shop-buy disabled" data-action="buy-poor">${it.price}🔸</div>`
       const cls = 'coll-item' + (owned ? ' owned' : ' locked')
       h += `<div class="${cls}">
         <div class="coll-icon"><img src="${it.img}" alt="${it.name}" onerror="this.onerror=null;this.outerHTML='${it.icon}'"></div>
