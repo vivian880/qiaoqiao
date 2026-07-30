@@ -5,13 +5,16 @@ body {
   background: #4A6B3D;
   color: #333;
   font-size: 17px;
+  overflow-x: hidden;
 }
 #app {
   max-width: 520px;
   margin: 0 auto;
   min-height: 100vh;
+  min-height: 100dvh;
   background: #4A6B3D;
-  padding-bottom: 24px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  padding-top: env(safe-area-inset-top);
 }
 .big-btn {
   display: block; width: 92%; margin: 14px auto;
@@ -328,7 +331,7 @@ ruby rt { font-size: 11px; color: #999; }
   .scope-card { padding: 14px; gap: 8px; }
   .scope-card .sc-num { font-size: 28px; }
   /* 手机端：高度驱动放大角色——先给容器确定百分比高度，img 再 100% 填满，避免百分比相对无高度父级失效被原图撑爆 */
-  .scene-wrap { height: 320px; }
+  .scene-wrap { height: 320px; height: 42dvh; }
   .scene-stage { padding: 0 3% 3%; }
   .qiao-char { position: absolute; left: -3%; bottom: 3%; height: 80%; flex: none; max-width: none; }
   .qiao-char .char-inner { height: 100%; }
