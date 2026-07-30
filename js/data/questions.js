@@ -426,6 +426,8 @@
   // ---------- 任务A：情报处·生字认读（每天都有） ----------
   // 家长在后台选「当前单元 + 当前课文」，系统从第1课到该课所有生字(含家长导入)
   // 随机抽 15 字（不足则全抽），每字 汉字→3拼音选项，全部选对才通关；不超纲。
+  // 抽取优先级：先「会认」字、再「会写」字（会写的基本都认识，认读优先练会认的字）；
+  // 导入字/无类型字作为兜底填充。
   function genIntelWords(rank, opts) {
     opts = opts || {}
     const cu = (typeof opts.currentUnit === 'number') ? opts.currentUnit : 1   // 当前学到第几单元
@@ -436,11 +438,25 @@
     const base = W.getCoveredWords(cu, cl)
     const imported = (window.Store && window.Store.getImportedWords ? window.Store.getImportedWords() : [])
       .filter(w => (w.lo || 999) <= target)
-      .map(w => ({ c: w.char, p: w.pinyin, group: '', imported: true }))
+      .map(w => ({ c: w.char, p: w.pinyin, group: '', type: w.type || '会认', imported: true }))
     const all = base.concat(imported)
     const need = Math.min(15, all.length)
-    const qs = draw('words_' + ukey, all.length, need).map(i => readingPinyinQuestion(all[i], all))
-    return { questions: qs, mode: '生字认读 · ' + need + ' 字', readingTotal: need }
+    // 优先级分组：会认 > 会写 > 其他（导入/无类型）
+    const hasType = w => typeof w.type === 'string' && w.type.length > 0
+    const huiRen = all.filter(w => hasType(w) && w.type.indexOf('会认') >= 0)
+    const huiXie = all.filter(w => hasType(w) && w.type === '会写')
+    const other  = all.filter(w => !hasType(w) || (w.type.indexOf('会认') < 0 && w.type !== '会写'))
+    const pick = (group, key, n) => {
+      if (!group.length || n <= 0) return []
+      const idxs = draw(key, group.length, Math.min(n, group.length))
+      return idxs.map(i => group[i])
+    }
+    const renQ = pick(huiRen, 'words_ren_' + ukey, Math.min(need, huiRen.length))
+    const xieQ = pick(huiXie, 'words_xie_' + ukey, Math.min(need - renQ.length, huiXie.length))
+    const othQ = pick(other,  'words_oth_' + ukey, Math.min(need - renQ.length - xieQ.length, other.length))
+    const sel = renQ.concat(xieQ).concat(othQ)
+    const qs = sel.map(w => readingPinyinQuestion(w, all))
+    return { questions: qs, mode: '生字认读 · ' + sel.length + ' 字', readingTotal: sel.length }
   }
 
   // ---------- 任务B：情报处·语文专项（周一至周五，周末无） ----------

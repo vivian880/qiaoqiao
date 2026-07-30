@@ -11,7 +11,9 @@ window.RANK = (function () {
     { level: 3, name: '连长', need: 14,
       addLevel: 3, mulTables: [2, 3, 4, 5, 6, 7, 8, 9], mulApp: true, div: true, practice: 3 },
     { level: 4, name: '营长', need: 30,
-      addLevel: 4, mulTables: [2, 3, 4, 5, 6, 7, 8, 9], mulApp: true, div: true, practice: 4 }
+      addLevel: 4, mulTables: [2, 3, 4, 5, 6, 7, 8, 9], mulApp: true, div: true, practice: 4 },
+    { level: 5, name: '团长', need: 60,
+      addLevel: 5, mulTables: [2, 3, 4, 5, 6, 7, 8, 9], mulApp: true, div: true, practice: 5 }
   ]
   function getRank(days) {
     let r = RANKS[0]

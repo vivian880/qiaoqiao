@@ -14,9 +14,21 @@
   function bulletsFor(key) { return Store.isAssault(key) ? 10 : 8 }
   // 游玩小建议
   const PLAY_TIP = '优先收集子弹喂饱樱桃，富余子弹慢慢收集装扮；终极珍藏装备需要长期坚持训练才能解锁！'
+  // 营地物资站·兑换规则说明（四大板块版）
+  const SHOP_RULES = '🔸 <b>子弹</b>是这里唯一的货币，靠完成每日作战任务赚取：<br>' +
+    '· 基础任务每项完成 <b>+8</b> 子弹<br>' +
+    '· 侦察连·阅读完成（周末）<b>+10</b> 子弹<br>' +
+    '· 当日全部任务通关 额外 <b>+10</b> 子弹<br>' +
+    '· 每日首次点击樱桃 <b>+2</b> 子弹<br>' +
+    '· 连续 5 天完成基础任务 一次性 <b>+50</b> 子弹<br><br>' +
+    '🍖 <b>战备口粮</b>：消耗品，可反复兑换，兑换后樱桃饱腹值即时增加（每日重置为 0%）。<br>' +
+    '🎖️ <b>军衔装束</b>：需达到对应军衔 + 消耗子弹，穿新自动脱旧；未达军衔显示「🔒 晋升XX后解锁」。<br>' +
+    '🎒 <b>装备宝库</b>：配件按部位叠加穿戴，每个部位只能穿一件，已拥有显示「✅已拥有」，已穿戴显示「✅已穿戴」。<br>' +
+    '🏠 <b>军事装备库</b>：武器兑换后陈列收藏，不穿戴到角色身上，按价格从低到高排列。<br>' +
+    '⚠️ 子弹不够时按钮会变灰，去做任务赚子弹吧！'
 
   const app = document.getElementById('app')
-  let state = { view: 'home', quiz: null, admin: { tab: 'words', unit: 1, editArticle: -1, editWord: -1, importOpen: false, importUnit: 1 }, greetShown: false }
+  let state = { view: 'home', quiz: null, shopTab: 'feed', admin: { tab: 'words', unit: 1, editArticle: -1, editWord: -1, importOpen: false, importUnit: 1 }, greetShown: false }
 
   // ---------- 工具 ----------
   function rubyfy(s) {
@@ -52,30 +64,68 @@
   }
 
   // ---------- 形象场景 ----------
+  // 穿戴道具叠加坐标：x/y 为道具中心在角色框内的百分比，w 为宽度占角色框宽度百分比
+  // （通过 preview.html 测试台校准，2026-07-30）
+  const EQUIP_POS = {
+    waterBottle: { x: 59, y: 69, w: 19, rot: -10, behind: false },
+    backpack:    { x: 40, y: 51, w: 33, rot: -7,  behind: true  },
+    compass:     { x: 60, y: 68, w: 9,  rot: 27,  behind: false },
+    bugle:       { x: 52, y: 68, w: 29, rot: -25, behind: false },
+    telescope:   { x: 52, y: 37, w: 24, rot: 5,   behind: false },
+    tracker:     { x: 44, y: 86, w: 16, rot: -13, behind: false },
+    goggles:     { x: 50, y: 25, w: 29, rot: -14, behind: false },
+    saddle:      { x: 87, y: 70, w: 42, rot: 4,   behind: true  }
+  }
+
+  // 生成某个角色身上的穿戴道具叠加层
+  function buildOverlays(u, who) {
+    if (!u.equippedItems) return ''
+    return Store.getEquips().filter(e => e.who === who && u.equippedItems[e.id]).map(e => {
+      const p = EQUIP_POS[e.id]
+      if (!p || !e.img) return ''
+      return `<div class="scene-ov ${p.behind ? 'behind' : 'front'}" style="left:${p.x}%;top:${p.y}%;width:${p.w}%;transform:translate(-50%,-50%) rotate(${p.rot}deg)"><img src="${e.img}" alt="${e.name}"></div>`
+    }).join('')
+  }
+
   function buildScene(u) {
-    // 双角色同框：邱少云 + 警犬樱桃，淡蓝背景，无多余装饰
+    // 双角色同框：邱少云（按当前军衔皮肤）+ 警犬樱桃，含穿戴道具叠加
+    const skinImg = u.currentSkin ? ('img/' + u.currentSkin + '.png') : 'img/qiaoqiao.png'
     return `
       <div class="scene-wrap">
         <div class="scene-stage">
           <div class="scene-char qiao-char" data-action="click-qiao">
-            <img src="img/qiaoqiao.png" onerror="this.onerror=null;this.src='images/qiaoqiao.png'" alt="邱少云">
+            <div class="char-inner">
+              <img class="char-base" src="${skinImg}" onerror="this.onerror=null;this.src='img/qiaoqiao.png'" alt="邱少云">
+              ${buildOverlays(u, 'qiao')}
+            </div>
           </div>
           <div class="scene-char cherry-char">
-            <img src="img/cherry.png" onerror="this.onerror=null;this.src='images/cherry.png'" alt="樱桃">
+            <div class="char-inner">
+              <img class="char-base" src="img/cherry.png" onerror="this.onerror=null;this.src='images/cherry.png'" alt="樱桃">
+              ${buildOverlays(u, 'cherry')}
+            </div>
+            <div class="cherry-thanks">谢谢主人 😊</div>
+            <div class="cherry-hearts"><span>💕</span><span>💕</span><span>💕</span></div>
           </div>
         </div>
       </div>`
   }
 
-  // 当前穿戴物品名称条（如"红袖章 ✔ 蝴蝶结 ✔"）
+  // 当前穿戴装备名称条
   function wornNames(u) {
-    const shop = Store.getShop()
-    const ids = (u.equippedQiao || []).concat(u.equippedCherry || [])
-    if (!ids.length) return '<span class="worn-none">还没有穿戴装扮，去装备库看看吧</span>'
+    const eq = Store.getEquips()
+    const ids = eq.filter(e => u.equippedItems && u.equippedItems[e.id]).map(e => e.id)
+    if (!ids.length) return '<span class="worn-none">还没有穿戴装备，去装备宝库看看吧</span>'
     return ids.map(id => {
-      const it = shop.find(s => s.id === id)
+      const it = eq.find(e => e.id === id)
       return it ? `<span class="worn-chip">${it.icon} ${it.name} ✔</span>` : ''
     }).join('')
+  }
+
+  // 通用图标渲染：优先图片，失败回退 emoji
+  function renderIcon(it, cls = 'shop-icon') {
+    if (it.img) return `<div class="${cls}"><img src="${it.img}" alt="${it.name}" onerror="this.onerror=null;this.outerHTML='${it.icon || '⭐'}'"></div>`
+    return `<div class="${cls}">${it.icon || '⭐'}</div>`
   }
 
   // ---------- 渲染：首页 ----------
@@ -133,6 +183,21 @@
     mask.innerHTML = `<div class="tip-box">
       <div class="tip-title">💡 游玩小建议</div>
       <div class="tip-body">${PLAY_TIP}</div>
+      <button class="big-btn btn-green tip-close">知道啦！</button>
+    </div>`
+    mask.addEventListener('click', e => {
+      if (e.target === mask || e.target.closest('.tip-close')) mask.remove()
+    })
+    document.body.appendChild(mask)
+  }
+
+  // 营地物资站·兑换规则说明弹窗
+  function showShopRules() {
+    const mask = document.createElement('div')
+    mask.className = 'tip-mask'
+    mask.innerHTML = `<div class="tip-box">
+      <div class="tip-title">📖 兑换规则说明</div>
+      <div class="tip-body" style="text-align:left">${SHOP_RULES}</div>
       <button class="big-btn btn-green tip-close">知道啦！</button>
     </div>`
     mask.addEventListener('click', e => {
@@ -312,60 +377,116 @@
     }
   }
 
-  // ---------- 渲染：营地物资站 ----------
+  // ---------- 渲染：营地物资站（四大板块 Tab）----------
   function renderShop() {
     const u = Store.getUser()
-    // 分类顺序：战备口粮 → 装备库 → 军需处 → 功勋殿堂
-    const cats = [
+    const rk = Store.getRankInfo()
+    const tabs = [
       { key: 'feed', name: '🍖 战备口粮' },
-      { key: 'cherry', name: '🐕 装备库' },
-      { key: 'qiao', name: '👧 军需处' },
-      { key: 'ultimate', name: '🏆 功勋殿堂' }
+      { key: 'skin', name: '🎖️ 军衔装束' },
+      { key: 'equip', name: '🎒 装备宝库' },
+      { key: 'weapon', name: '🏠 军事装备库' }
     ]
-    let html = `<div class="quiz-head"><div class="quiz-back" data-action="go-home">← 营地</div><span class="quiz-title">🎒 营地物资站</span><span class="quiz-progress">🔸 ${u.totalScore}</span></div>`
-    // 顶部角色形象展示区：与首页完全一致，换装即时同步
+    let html = `<div class="shop-head">
+      <div class="quiz-back" data-action="go-home">← 营地</div>
+      <span class="quiz-title">🎒 营地物资站</span>
+      <span class="shop-bullets">🔸 ${u.totalScore}</span>
+      <span class="shop-rank">🎖 ${rk.name}</span>
+    </div>`
+    html += `<div class="play-tip-entry" data-action="show-shoprules">📖 兑换规则说明</div>`
     html += `<div class="shop-scene" data-action="shop-cherry">${buildScene(u)}<div class="worn-row">${wornNames(u)}</div></div>`
-    cats.forEach(c => {
-      const items = Store.getShop().filter(s => s.cat === c.key)
-      html += `<div class="shop-cat">${c.name}</div><div class="shop-grid">`
-      items.forEach(it => {
-        const owned = u.ownedItems.includes(it.id) && !it.consumable
-        const equipped = owned && it.wear && Store.isEquipped(it.id)
-        const afford = u.totalScore >= it.price
-        let action
-        if (!owned && !(!it.consumable && u.ownedItems.includes(it.id))) {
-          // 未拥有（或消耗品）：可兑换；子弹不足置灰
-          action = afford
-            ? `<div class="shop-buy" data-action="buy" data-id="${it.id}">兑换</div>`
-            : `<div class="shop-buy disabled" data-action="buy-poor">兑换</div>`
-        } else if (it.wear) {
-          // 已拥有的装扮：三态
-          action = equipped
-            ? `<div class="shop-owned on" data-action="wear-off" data-id="${it.id}">✅已穿戴 ●点击脱下</div>`
-            : `<div class="shop-owned off" data-action="wear-on" data-id="${it.id}">✅点击穿戴</div>`
-        } else {
-          action = `<div class="shop-owned">✅已拥有</div>`
-        }
-        // 防弹背心换色：已拥有后显示 5 个色块（免费即时换色）
-        let vestPicker = ''
-        if (it.id === 'vest' && owned) {
-          const cur = Store.getVestColor()
-          vestPicker = `<div class="vest-colors">` + Store.getVestColors().map(v =>
-            `<span class="vest-dot ${v.color === cur ? 'cur' : ''}" title="${v.name}" style="background:${v.color}" data-action="vest-color" data-c="${v.color}"></span>`).join('') + `</div>`
-        }
-        html += `<div class="shop-item">
-          <div class="shop-icon">${it.icon}</div>
-          <div class="shop-name">${it.name}${it.slotName ? '<span class="slot-tag">' + it.slotName + '</span>' : ''}</div>
-          <div class="shop-effect">${it.effect}</div>
-          <div class="shop-price">🔸 ${it.price}</div>
-          ${action}
-          ${vestPicker}
-        </div>`
-      })
-      html += `</div>`
-    })
+    html += `<div class="shop-tabs">` + tabs.map(t =>
+      `<div class="shop-tab ${state.shopTab === t.key ? 'on' : ''}" data-action="shop-tab" data-tab="${t.key}">${t.name}</div>`).join('') + `</div>`
+    if (state.shopTab === 'feed') html += renderFoods(u)
+    else if (state.shopTab === 'skin') html += renderSkins(u)
+    else if (state.shopTab === 'equip') html += renderEquips(u)
+    else html += renderWeapons(u)
     html += `<div class="play-tip-entry" data-action="show-tip">💡 游玩小建议</div>`
     app.innerHTML = html
+  }
+
+  function renderFoods(u) {
+    let h = `<div class="shop-panel"><div class="panel-tip">🍖 喂饱警犬樱桃的口粮，兑换后饱腹值即时增加（每日重置为 0%）</div><div class="shop-grid">`
+    Store.getFoods().forEach(it => {
+      const afford = u.totalScore >= it.price
+      const btn = afford
+        ? `<div class="shop-buy" data-action="buy" data-id="${it.id}">兑换 🔸${it.price}</div>`
+        : `<div class="shop-buy disabled" data-action="buy-poor">还差 ${it.price - u.totalScore} 🔸</div>`
+      h += `<div class="shop-item">
+        <div class="shop-icon"><img src="${it.img}" alt="${it.name}" onerror="this.onerror=null;this.outerHTML='${it.icon}'"></div>
+        <div class="shop-name">${it.name}</div>
+        <div class="shop-effect">${it.effect}</div>
+        ${btn}
+      </div>`
+    })
+    return h + `</div></div>`
+  }
+
+  function renderSkins(u) {
+    let h = `<div class="shop-panel"><div class="panel-tip">🎖️ 邱少云军衔装束：达成对应军衔 + 消耗子弹即可购买穿戴，穿新自动脱旧。默认「新兵装束」初始拥有。</div><div class="skin-grid">`
+    Store.getSkins().forEach(it => {
+      const unlocked = Store.skinUnlocked(it)
+      const worn = u.currentSkin === it.id
+      const owned = Store.ownsSkin(it.id)
+      let btn
+      if (!unlocked) btn = `<div class="shop-buy locked" data-action="buy-poor">🔒 晋升${it.rank}后解锁 · ${it.price}🔸</div>`
+      else if (worn) btn = `<div class="shop-owned on">✅ 已穿戴</div>`
+      else if (owned) btn = `<div class="shop-owned off" data-action="wear-skin" data-id="${it.id}">👕 点击穿戴</div>`
+      else btn = `<div class="shop-buy" data-action="buy-skin" data-id="${it.id}">购买并穿戴 ${it.price}🔸</div>`
+      const cls = 'skin-card' + (worn ? ' equipped' : '') + (owned ? ' owned' : '')
+      h += `<div class="${cls}">
+        <div class="skin-img"><img src="${it.img}" onerror="this.onerror=null;this.src='img/qiaoqiao.png'" alt="${it.name}"></div>
+        <div class="skin-name">${it.name}</div>
+        <div class="skin-rank">所需军衔：${it.rank}</div>
+        ${btn}
+      </div>`
+    })
+    return h + `</div></div>`
+  }
+
+  function renderEquips(u) {
+    let h = `<div class="shop-panel"><div class="panel-tip">🎒 装备配件：按部位叠加穿戴，每个部位只能穿一件。点击已拥有的可穿戴 / 脱下。</div><div class="shop-grid">`
+    Store.getEquips().forEach(it => {
+      const owned = Store.ownsEquip(it.id)
+      const on = Store.isEquipOn(it.id)
+      const afford = u.totalScore >= it.price
+      let btn
+      if (!owned) btn = afford
+        ? `<div class="shop-buy" data-action="buy-equip" data-id="${it.id}">兑换 🔸${it.price}</div>`
+        : `<div class="shop-buy disabled" data-action="buy-poor">还差 ${it.price - u.totalScore} 🔸</div>`
+      else if (on) btn = `<div class="shop-owned on" data-action="toggle-equip" data-id="${it.id}">✅ 已穿戴 · 点击脱下</div>`
+      else btn = `<div class="shop-owned off" data-action="toggle-equip" data-id="${it.id}">✅ 已拥有 · 点击穿戴</div>`
+      const cls = 'shop-item' + (on ? ' equipped' : '')
+      h += `<div class="${cls}">
+        ${owned ? '<span class="shop-badge">✅拥有</span>' : ''}
+        <div class="shop-icon"><img src="${it.img}" alt="${it.name}" onerror="this.onerror=null;this.outerHTML='${it.icon}'"></div>
+        <div class="shop-name">${it.name}<span class="slot-tag">${it.slotName}</span></div>
+        <div class="shop-effect">${it.effect}</div>
+        ${btn}
+      </div>`
+    })
+    return h + `</div></div>`
+  }
+
+  function renderWeapons(u) {
+    let h = `<div class="shop-panel"><div class="panel-tip">🏠 军事装备库：兑换后陈列收藏，不穿戴到角色身上。按价格从低到高排列。</div><div class="coll-grid">`
+    Store.getWeapons().slice().sort((a, b) => a.price - b.price).forEach(it => {
+      const owned = Store.ownsWeapon(it.id)
+      const afford = u.totalScore >= it.price
+      let btn
+      if (owned) btn = `<div class="coll-owned">✅ 已收藏</div>`
+      else btn = afford
+        ? `<div class="shop-buy" data-action="buy-weapon" data-id="${it.id}">解锁 🔸${it.price}</div>`
+        : `<div class="shop-buy disabled" data-action="buy-poor">还差 ${it.price - u.totalScore} 🔸</div>`
+      const cls = 'coll-item' + (owned ? ' owned' : ' locked')
+      h += `<div class="${cls}">
+        <div class="coll-icon"><img src="${it.img}" alt="${it.name}" onerror="this.onerror=null;this.outerHTML='${it.icon}'"></div>
+        <div class="coll-name">${it.name}</div>
+        ${owned ? '<div class="coll-tag">已收藏</div>' : '<div class="coll-price">🔸 ' + it.price + '</div>'}
+        ${btn}
+      </div>`
+    })
+    return h + `</div></div>`
   }
 
   // ---------- 渲染：首长指挥部 ----------
@@ -627,7 +748,7 @@
           if (Store.isPassed(d.key)) { toast('已通关·进入复习'); startQuiz(d.key) }
           else startQuiz(d.key)
           break
-        case 'go-shop': state.view = 'shop'; renderShop(); break
+        case 'go-shop': state.view = 'shop'; state.shopTab = 'feed'; renderShop(); break
         case 'go-admin': adminGate(); break
         case 'go-home': state.view = 'home'; state.quiz = null; renderHome(); break
         case 'quiz-back': state.view = 'home'; state.quiz = null; renderHome(); break
@@ -637,15 +758,21 @@
           if (Store.canRetry(state.quiz.key)) { Store.incRetry(state.quiz.key); startQuiz(state.quiz.key) }
           else toast('今天已练3次'); break
         case 'click-cherry': {
+          // 先播放"吃东西+谢谢主人"动画（无论今天是否已领过奖励，点击都给反馈）
+          const wrap = document.querySelector('.cherry-char')
+          if (wrap) {
+            wrap.classList.remove('eating')
+            void wrap.offsetWidth // 强制 reflow，确保动画可重复触发
+            wrap.classList.add('eating')
+          }
           const add = Store.clickCherry()
           if (add) {
-            const wrap = document.querySelector('.cherry-char')
-            if (wrap) {
-              wrap.classList.add('eating')
-              toast('樱桃开心地吃起来啦 🦴 子弹 +' + add)
-              setTimeout(() => renderHome(), 4800)
-            } else { toast('樱桃蹭了蹭你 🐾 子弹 +' + add); renderHome() }
-          } else toast('樱桃今天已经奖励过啦~')
+            toast('樱桃开心地吃起来啦 🦴 谢谢主人！子弹 +' + add)
+            setTimeout(() => renderHome(), 4800) // 动画结束后再刷新，更新子弹数
+          } else {
+            toast('樱桃蹭了蹭你 🐾 谢谢主人~')
+            setTimeout(() => { const w = document.querySelector('.cherry-char'); if (w) w.classList.remove('eating') }, 4800)
+          }
           break
         }
         case 'click-qiao': {
@@ -657,45 +784,44 @@
           toast('邱少云给你敬了个礼 🫡')
           break
         }
+        case 'shop-tab': state.shopTab = d.tab; renderShop(); break
         case 'buy': {
-          const it = Store.getShop().find(s => s.id === d.id)
           const r = Store.buyItem(d.id)
           if (!r.ok) { toast(r.msg); break }
-          if (it && it.cat === 'feed') {
-            const gain = (it.effect.match(/([0-9]+)%/) || [])[1] || ''
-            toast('樱桃大口吃起来啦 🦴 饱腹 +' + gain + '%')
+          toast(r.msg || '兑换成功！')
+          if (r.kind === 'food') {
+            // 先重渲染（刷新饱腹/子弹），再给重渲染后的狗狗加动画，否则动画会被冲掉
             renderShop()
             const dog = document.querySelector('.shop-scene .cherry-char')
-            if (dog) { dog.classList.add('eating'); setTimeout(() => { const d2 = document.querySelector('.shop-scene .cherry-char'); if (d2) d2.classList.remove('eating') }, 4800) }
-          } else if (it && it.wear) {
-            toast('兑换成功，已自动穿戴！')
-            renderShop()
-          } else {
-            toast('兑换成功！' + it.effect)
-            renderShop()
-          }
+            if (dog) {
+              dog.classList.remove('eating')
+              void dog.offsetWidth
+              dog.classList.add('eating')
+              setTimeout(() => { const d2 = document.querySelector('.shop-scene .cherry-char'); if (d2) d2.classList.remove('eating') }, 4800)
+            }
+          } else renderShop()
           break
+        }
+        case 'buy-skin': {
+          const r = Store.buyItem(d.id)
+          if (!r.ok) { toast(r.msg); break }
+          toast(r.msg); renderShop(); break
+        }
+        case 'wear-skin': { if (Store.setSkin(d.id)) toast('穿戴成功！'); renderShop(); break }
+        case 'buy-equip': {
+          const r = Store.buyItem(d.id)
+          if (!r.ok) { toast(r.msg); break }
+          toast(r.msg); renderShop(); break
+        }
+        case 'toggle-equip': { if (Store.toggleEquip(d.id)) toast('已更新穿戴'); renderShop(); break }
+        case 'buy-weapon': {
+          const r = Store.buyItem(d.id)
+          if (!r.ok) { toast(r.msg); break }
+          toast(r.msg); renderShop(); break
         }
         case 'buy-poor': toast('子弹不够，去做任务赚吧！'); break
-        case 'wear-on': {
-          if (Store.equipItem(d.id)) toast('穿戴好啦！')
-          renderShop()
-          break
-        }
-        case 'wear-off': {
-          if (Store.unequipItem(d.id)) toast('已脱下，恢复默认形象')
-          renderShop()
-          break
-        }
-        case 'vest-color': {
-          if (Store.setVestColor(d.c)) {
-            const v = Store.getVestColors().find(x => x.color === d.c)
-            toast('背心换成「' + (v ? v.name : '') + '」啦！')
-          }
-          renderShop()
-          break
-        }
         case 'show-tip': showPlayTip(); break
+        case 'show-shoprules': showShopRules(); break
         case 'shop-cherry': break
         case 'admin-tab': state.admin.tab = d.tab; renderAdmin(); break
         case 'admin-period': state.admin.period = d.p; renderAdmin(); break
@@ -790,9 +916,33 @@
     }
   }
 
+  // 本地测试专用：仅在 localhost/127.0.0.1 下生效，线上（GitHub Pages）无效
+  // 用法：
+  //   http://localhost:8083/?bullets=9999&days=999 → 子弹 9999 + 军衔天数 999（团长）
+  function devCheat() {
+    const h = location.hostname
+    if (h !== 'localhost' && h !== '127.0.0.1') return
+    const p = new URLSearchParams(location.search)
+    const msgs = []
+    if (p.has('bullets')) {
+      const target = Math.max(0, parseInt(p.get('bullets')) || 9999)
+      Store.adjustBullets(target - Store.getUser().totalScore)
+      msgs.push('子弹 ' + target + ' 🔸')
+    }
+    if (p.has('days')) {
+      const days = Math.max(0, parseInt(p.get('days')) || 999)
+      const u = Store.getUser()
+      u.totalDays = days
+      Store.save()
+      msgs.push('军衔 ' + Store.getRankInfo().name + ' · 累计 ' + days + ' 天')
+    }
+    if (msgs.length) setTimeout(() => toast('🧪 测试模式：' + msgs.join(' · ')), 500)
+  }
+
   function init() {
     Store.init()
     bindEvents()
+    devCheat()
     maybeGreet()
     renderHome()
   }

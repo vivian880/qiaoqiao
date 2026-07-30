@@ -77,18 +77,58 @@ body {
 }
 .scene-stage { position: absolute; inset: 0; z-index: 2;
   display: flex; align-items: flex-end; justify-content: center; gap: 0.5%; padding: 0 2% 3%; }
-.scene-char { position: relative; display: block; }
-.scene-char img { display: block; width: 100%; height: auto; }
-/* 邱少云：左侧主体，占展示区约 55% */
-.qiao-char { flex: 0 0 55%; max-width: 300px; }
-/* 樱桃：邱少云右侧脚边，稍微矮一点点，占展示区约 39% */
-.cherry-char { flex: 0 0 39%; max-width: 240px; }
-/* 点击樱桃时的弹跳反馈 */
-.cherry-char.eating img { animation: cherryPop .45s ease-in-out 6; }
+/* 角色统一按"高度"约束缩放：无论皮肤图画布多大，视觉大小都和默认形象一致，绝不超出场景框 */
+.scene-char { position: relative; display: block; flex: 0 0 auto; }
+/* 角色内层：基础形象 + 穿戴道具叠加，一起做动画；宽度收缩至图片实际宽度，保证道具百分比坐标准确 */
+.char-inner { position: relative; height: 100%; width: fit-content; margin: 0 auto; }
+.char-inner .char-base { position: relative; z-index: 1; display: block; height: 100%; width: auto; max-width: none; }
+.scene-ov { position: absolute; pointer-events: none; }
+.scene-ov img { display: block; width: 100%; height: auto; filter: drop-shadow(0 2px 3px rgba(0,0,0,.18)); }
+.scene-ov.behind { z-index: 0; }
+.scene-ov.front { z-index: 2; }
+/* 邱少云：左侧主体，高度占展示区 84% */
+.qiao-char { height: 84%; }
+/* 樱桃：邱少云右侧脚边，稍微矮一点，高度占 64% */
+.cherry-char { height: 64%; position: relative; }
+/* 点击樱桃时的开心弹跳反馈 */
+.cherry-char.eating .char-inner { animation: cherryPop .45s ease-in-out 6; }
 @keyframes cherryPop {
-  0%,100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-6px) scale(1.02); }
+  0%,100% { transform: translateY(0) scale(1) rotate(0); }
+  25% { transform: translateY(-6px) scale(1.03) rotate(-3deg); }
+  50% { transform: translateY(-2px) scale(1.05) rotate(3deg); }
+  75% { transform: translateY(-6px) scale(1.03) rotate(-3deg); }
 }
+
+/* 吃东西时的“谢谢主人”气泡 + 飘心 */
+.cherry-thanks {
+  position: absolute; left: 50%; top: -4%;
+  transform: translateX(-50%);
+  background: #fff7fb; color: #d6336c; font-weight: 700; font-size: 14px;
+  padding: 4px 10px; border-radius: 14px; border: 2px solid #ffd6e7;
+  white-space: nowrap; pointer-events: none; opacity: 0; z-index: 5;
+  box-shadow: 0 2px 6px rgba(214,51,108,.2);
+}
+.cherry-char.eating .cherry-thanks { animation: thanksFloat 1.8s ease-in-out infinite; }
+
+@keyframes thanksFloat {
+  0%   { opacity: 0; transform: translate(-50%, 8px) scale(.8); }
+  20%  { opacity: 1; transform: translate(-50%, -2px) scale(1); }
+  80%  { opacity: 1; transform: translate(-50%, -14px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -26px) scale(.95); }
+}
+
+.cherry-hearts { position: absolute; left: 50%; top: 12%; width: 0; height: 0; pointer-events: none; z-index: 4; }
+.cherry-hearts span { position: absolute; left: 0; bottom: 0; font-size: 18px; opacity: 0; }
+.cherry-char.eating .cherry-hearts span { animation: heartUp 1.8s ease-in infinite; }
+.cherry-char.eating .cherry-hearts span:nth-child(2) { animation-delay: .6s; left: -16px; }
+.cherry-char.eating .cherry-hearts span:nth-child(3) { animation-delay: 1.2s; left: 16px; }
+
+@keyframes heartUp {
+  0%   { opacity: 0; transform: translateY(0) scale(.6); }
+  30%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-54px) scale(1.1); }
+}
+
 
 /* ===== 角色动画：让两位人物更有"活气" ===== */
 /* 入场：仅淡入，不做位移/缩放，避免反复重渲染时再"弹"一下 */
@@ -120,21 +160,21 @@ body {
   transform-origin: bottom center;
   animation: popIn .6s ease-out both;
 }
-.qiao-char img, .cherry-char img {
+.qiao-char .char-inner, .cherry-char .char-inner {
   transform-origin: bottom center;
   will-change: transform;
 }
-/* 两人待机：邱少云极轻微慢节奏呼吸；樱桃稍快、带左右晃，更显灵动 */
-.qiao-char img { animation: qiaoFloat 6.5s ease-in-out infinite; }
-.cherry-char img { animation: cherryFloat 4.2s ease-in-out infinite; }
+/* 两人待机：邱少云极轻微慢节奏呼吸；樱桃稍快、带左右晃，更显灵动（动画在 char-inner 上，道具跟着一起动） */
+.qiao-char .char-inner { animation: qiaoFloat 6.5s ease-in-out infinite; }
+.cherry-char .char-inner { animation: cherryFloat 4.2s ease-in-out infinite; }
 /* 邱少云被点击时的小跳（覆盖待机动画）*/
-.qiao-char.tap img { animation: qiaoHop .6s ease; }
+.qiao-char.tap .char-inner { animation: qiaoHop .6s ease; }
 
-/* 尊重"减少动效"系统偏好：全部关闭动画 */
+/* 尊重"减少动效"系统偏好：关闭持续性的待机/入场动画，避免眩晕 */
 @media (prefers-reduced-motion: reduce) {
-  .qiao-char, .cherry-char,
-  .qiao-char img, .cherry-char img { animation: none !important; }
-  .cherry-char.eating img { animation: none !important; }
+  .qiao-char, .cherry-char { animation: none !important; }
+  .qiao-char .char-inner, .cherry-char .char-inner { animation: none !important; }
+  /* 注意：樱桃"吃东西谢谢主人"是用户主动触发的短时反馈，不在此处关闭，确保一定能看到 */
 }
 
 .shop-btn { margin-top: 6px; }
@@ -193,7 +233,11 @@ ruby rt { font-size: 11px; color: #999; }
 .shop-cat { color: #fff; font-size: 18px; font-weight: bold; margin: 14px 16px 6px; }
 .shop-grid { display: flex; flex-wrap: wrap; padding: 0 10px; }
 .shop-item { width: 46%; background: #fff; border-radius: 16px; padding: 12px; margin: 6px; text-align: center; }
-.shop-icon { font-size: 34px; }
+.shop-icon { font-size: 34px; height: 90px; display: flex; align-items: center; justify-content: center; }
+.shop-icon img { max-width: 100%; max-height: 90px; object-fit: contain; display: block; }
+.coll-icon { height: 70px; display: flex; align-items: center; justify-content: center; }
+.coll-icon img { max-width: 100%; max-height: 70px; object-fit: contain; display: block; }
+.shop-item, .coll-item { position: relative; }
 .shop-name { font-size: 17px; font-weight: bold; color: #4A6B3D; }
 .shop-effect { font-size: 12px; color: #888; min-height: 30px; margin: 4px 0; }
 .shop-price { font-size: 15px; color: #E98BA0; font-weight: bold; }
@@ -287,9 +331,11 @@ ruby rt { font-size: 11px; color: #999; }
   .scene-wrap { height: 320px; }
   .scene-stage { padding: 0 3% 3%; }
   .qiao-char { position: absolute; left: -3%; bottom: 3%; height: 80%; flex: none; max-width: none; }
-  .qiao-char img { height: 100%; width: auto; max-width: none; }
+  .qiao-char .char-inner { height: 100%; }
+  .qiao-char .char-base { height: 100%; width: auto; max-width: none; }
   .cherry-char { position: absolute; right: 2%; bottom: 3%; height: 64%; flex: none; max-width: none; }
-  .cherry-char img { height: 100%; width: auto; max-width: none; }
+  .cherry-char .char-inner { height: 100%; }
+  .cherry-char .char-base { height: 100%; width: auto; max-width: none; }
 }
 
 /* 可视化筛选 · 出题范围 */
@@ -331,6 +377,16 @@ ruby rt { font-size: 11px; color: #999; }
 /* 子弹不足：兑换按钮置灰 */
 .shop-buy.disabled { background: #c9c9c9; color: #f3f3f3; cursor: not-allowed; box-shadow: none; }
 
+/* 兑换规则说明入口 & 分类色条 & 商品卡角标/高亮 */
+.play-tip-entry[data-action="show-shoprules"] { color: #ffe08a; }
+.shop-cat-desc { color: #e7f0df; font-size: 12px; opacity: 0.9; margin: 0 16px 4px; }
+.shop-cat-bar { height: 4px; border-radius: 2px; margin: 0 16px 8px; opacity: 0.65; }
+.cat-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+.shop-item { position: relative; }
+.shop-badge { position: absolute; top: 6px; right: 6px; background: #4A6B3D; color: #fff; font-size: 11px; border-radius: 10px; padding: 2px 7px; font-weight: bold; z-index: 2; }
+.shop-item.equipped { box-shadow: 0 0 0 3px #E98BA0 inset, 0 4px 0 rgba(0,0,0,0.12); }
+.shop-item.equipped .shop-badge { background: #E98BA0; }
+
 /* 已穿戴/未穿戴状态按钮 */
 .shop-owned { background: #f2f2f2; color: #888; }
 
@@ -368,3 +424,42 @@ ruby rt { font-size: 11px; color: #999; }
 .wrong-row .w-task { font-size: 12px; color: #4A6B3D; font-weight: bold; }
 .wrong-row .w-q { font-size: 15px; }
 .wrong-row .w-a { font-size: 13px; color: #c0392b; }
+
+/* ===== 营地物资站：四大板块 Tab 重构 ===== */
+.shop-head { display: flex; align-items: center; gap: 8px; padding: 14px 14px 6px; color: #fff; flex-wrap: wrap; }
+.shop-head .quiz-title { flex: 1; font-size: 19px; font-weight: bold; }
+.shop-bullets { background: #2f4a25; border-radius: 12px; padding: 4px 10px; font-size: 15px; font-weight: bold; }
+.shop-rank { background: #8a6d2b; border-radius: 12px; padding: 4px 10px; font-size: 14px; font-weight: bold; }
+
+.shop-tabs { display: flex; gap: 6px; padding: 10px 12px 0; }
+.shop-tab {
+  flex: 1; text-align: center; background: #3c5a31; color: #d8e6cf;
+  border-radius: 14px 14px 0 0; padding: 10px 6px; font-size: 14px; font-weight: bold; cursor: pointer;
+  border: 2px solid transparent; border-bottom: none;
+}
+.shop-tab.on { background: #fff; color: #4A6B3D; border-color: #c9c9c9; }
+
+.shop-panel { background: #fff; margin: 0 12px 14px; border-radius: 0 0 16px 16px; padding: 12px 10px 16px; border: 2px solid #c9c9c9; border-top: none; }
+.panel-tip { font-size: 13px; color: #8a8a8a; line-height: 1.5; margin: 2px 4px 12px; padding: 8px 10px; background: #f5f8f2; border-radius: 10px; }
+
+/* 军衔装束：皮肤卡片网格 */
+.skin-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 4px; }
+.skin-card { background: #f7faf4; border: 2px solid #e3ecdc; border-radius: 16px; padding: 12px; text-align: center; }
+.skin-card.owned { border-color: #cdddbd; }
+.skin-card.equipped { border-color: #E98BA0; box-shadow: 0 0 0 3px rgba(233,139,160,0.25); }
+.skin-img { width: 100%; height: 210px; border-radius: 12px; overflow: hidden; background: linear-gradient(180deg,#EAF6FD,#D6EAF8); display: flex; align-items: flex-end; justify-content: center; }
+.skin-img img { max-height: 100%; width: auto; object-fit: contain; }
+.skin-name { font-size: 17px; font-weight: bold; color: #4A6B3D; margin-top: 8px; }
+.skin-rank { font-size: 12px; color: #999; margin: 2px 0 8px; }
+.shop-buy.locked { background: #c9c9c9; color: #f3f3f3; cursor: not-allowed; box-shadow: none; }
+
+/* 军事装备库：收藏柜网格 */
+.coll-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 4px; }
+.coll-item { background: #f3f3f3; border: 2px solid #e0e0e0; border-radius: 14px; padding: 12px 8px; text-align: center; }
+.coll-item.locked { filter: grayscale(1); opacity: 0.7; }
+.coll-item.owned { background: #fff7ec; border-color: #f0c060; }
+.coll-icon { font-size: 34px; }
+.coll-name { font-size: 14px; font-weight: bold; color: #4A6B3D; margin: 4px 0; }
+.coll-tag { font-size: 12px; color: #b8860b; font-weight: bold; margin-bottom: 4px; }
+.coll-price { font-size: 13px; color: #E98BA0; font-weight: bold; margin-bottom: 4px; }
+.coll-owned { border-radius: 12px; padding: 7px; margin-top: 4px; font-size: 13px; font-weight: bold; background: #f2c200; color: #6a5200; }

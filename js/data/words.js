@@ -15,7 +15,7 @@ window.WORDS = (function () {
   }
   function getCoveredWords(unit, lesson) {
     const target = loOf(unit, lesson); const out = []
-    CHARS.forEach(e => { if (e.lo <= target) out.push({ c: e.char, p: e.pinyin, group: '' }) })
+    CHARS.forEach(e => { if (e.lo <= target) out.push({ c: e.char, p: e.pinyin, group: '', type: e.type }) })
     return out
   }
   return { CHARS, LESSON_ORDER, loOf, getLessonLO, getLessonOrder, getUnitLessons, getWords, getCoveredWords }

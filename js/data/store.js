@@ -4,33 +4,40 @@ window.Store = (function () {
   const WKEY = 'qiaoqiao_words_v2'
   const AKEY = 'qiaoqiao_articles_v2'
 
-  // 营地物资站物品（四类：战备口粮/装备库/军需处/功勋殿堂）
-  // slot：穿戴部位（同部位互斥，穿新自动脱旧）；uniform 全套军装为特殊装扮，可与单件叠加
-  const SHOP = [
-    { id: 'dogfood', cat: 'feed', consumable: true, name: '狗粮', price: 10, icon: '🥫', effect: '饱腹 +20%', wear: null, apply: u => { u.cherryFullness = Math.min(100, u.cherryFullness + 20) } },
-    { id: 'bone', cat: 'feed', consumable: true, name: '磨牙棒', price: 15, icon: '🦴', effect: '饱腹 +30%', wear: null, apply: u => { u.cherryFullness = Math.min(100, u.cherryFullness + 30) } },
-    { id: 'can', cat: 'feed', consumable: true, name: '肉罐头', price: 20, icon: '🍖', effect: '饱腹 +50%', wear: null, apply: u => { u.cherryFullness = Math.min(100, u.cherryFullness + 50) } },
-    { id: 'bow', cat: 'cherry', name: '蝴蝶结', price: 30, icon: '🎀', effect: '亲密度 +1', wear: 'cherry', slot: 'head', slotName: '头部', apply: u => addIntimacy(u, 1) },
-    { id: 'boots', cat: 'cherry', name: '小警靴', price: 45, icon: '🥾', effect: '亲密度 +1', wear: 'cherry', slot: 'feet', slotName: '脚部', apply: u => addIntimacy(u, 1) },
-    { id: 'medal', cat: 'cherry', name: '勋章', price: 50, icon: '🏅', effect: '亲密度 +2', wear: 'cherry', slot: 'chest', slotName: '胸前', apply: u => addIntimacy(u, 2) },
-    { id: 'goggles', cat: 'cherry', name: '护目镜', price: 55, icon: '🥽', effect: '亲密度 +2', wear: 'cherry', slot: 'eyes', slotName: '眼部', apply: u => addIntimacy(u, 2) },
-    { id: 'vest', cat: 'cherry', name: '防弹背心', price: 60, icon: '🦺', effect: '亲密度 +2 · 可换色', wear: 'cherry', slot: 'body', slotName: '身体', apply: u => addIntimacy(u, 2) },
-    { id: 'sleeve', cat: 'qiao', name: '红袖章', price: 40, icon: '🔴', effect: '邱少云左臂', wear: 'qiao', slot: 'arm', slotName: '左臂' },
-    { id: 'cap', cat: 'qiao', name: '军帽', price: 50, icon: '🎩', effect: '邱少云头顶', wear: 'qiao', slot: 'head', slotName: '头部' },
-    { id: 'horn', cat: 'qiao', name: '小军号', price: 60, icon: '🎺', effect: '邱少云右手 · 解锁吹号', wear: 'qiao', slot: 'hand', slotName: '手部' },
-    { id: 'holster', cat: 'qiao', name: '手枪套', price: 70, icon: '🔫', effect: '邱少云右侧腰间', wear: 'qiao', slot: 'waist', slotName: '腰间' },
-    { id: 'glory', cat: 'ultimate', name: '功勋奖章', price: 120, icon: '🎖', effect: '亲密度 +5', wear: 'cherry', slot: 'glory', slotName: '功勋', apply: u => addIntimacy(u, 5) },
-    { id: 'uniform', cat: 'ultimate', name: '全套军装', price: 150, icon: '🪖', effect: '邱少云全身 · 可与单件叠加', wear: 'qiao', slot: 'suit', slotName: '全身' },
-    { id: 'doghouse', cat: 'ultimate', name: '樱桃小窝', price: 180, icon: '🏠', effect: '背景升级+每日+2子弹', special: 'background' },
-    { id: 'frame', cat: 'ultimate', name: '合影相框', price: 200, icon: '🖼', effect: '解锁合影', special: 'frame' }
+  // ===== 营地物资站（重构：四大板块）=====
+  // 板块一：战备口粮（消耗品，兑换后樱桃饱腹即时增加，每日重置为 0%）
+  const FOODS = [
+    { id: 'dogfood', name: '狗粮', icon: '🦴', img: 'img/items/dog_food.png', effect: '饱腹 +20%', price: 10, full: 20 },
+    { id: 'bone', name: '磨牙棒', icon: '🦴', img: 'img/items/bone.png', effect: '饱腹 +30%', price: 15, full: 30 },
+    { id: 'can', name: '肉罐头', icon: '🥫', img: 'img/items/can.png', effect: '饱腹 +50%', price: 20, full: 50 },
+    { id: 'milk', name: '狗狗牛奶', icon: '🥛', img: 'img/items/milk.png', effect: '饱腹 +40%', price: 20, full: 40 }
   ]
-  // 防弹背心可选颜色（5 种）
-  const VEST_COLORS = [
-    { name: '军绿色', color: '#4A6B3D', note: '默认经典款' },
-    { name: '迷彩绿', color: '#5B7A3A', note: '丛林迷彩' },
-    { name: '沙漠黄', color: '#C4A45A', note: '沙漠作战款' },
-    { name: '雪地白', color: '#E8EAE6', note: '雪地伪装款' },
-    { name: '中国红', color: '#C41A1A', note: '庆典特别款' }
+  // 板块二：军衔装束（邱少云皮肤），需达到对应军衔 + 消耗子弹
+  const SKINS = [
+    { id: 'skin_1', name: '班长装束', rank: '班长', price: 80, img: 'img/skin_1.png' },
+    { id: 'skin_2', name: '连长装束', rank: '连长', price: 150, img: 'img/skin_2.png' },
+    { id: 'skin_3', name: '营长装束', rank: '营长', price: 250, img: 'img/skin_3.png' },
+    { id: 'skin_4', name: '团长装束', rank: '团长', price: 400, img: 'img/skin_4.png' }
+  ]
+  // 板块三：装备宝库（穿戴配件，按部位叠加，每部位仅一件）
+  const EQUIPS = [
+    { id: 'tracker', name: '追踪器', slot: 'cherryNeck', who: 'cherry', slotName: '樱桃·颈部', effect: '亲密度 +1', price: 40, icon: '📡', img: 'img/items/tracker.png' },
+    { id: 'waterBottle', name: '水壶', slot: 'qiaoWaist', who: 'qiao', slotName: '邱少云·腰间', effect: '装饰', price: 40, icon: '💧', img: 'img/items/water_bottle.png' },
+    { id: 'backpack', name: '作战背包', slot: 'qiaoBack', who: 'qiao', slotName: '邱少云·背部', effect: '装饰', price: 50, icon: '🎒', img: 'img/items/backpack.png' },
+    { id: 'goggles', name: '战术护目镜', slot: 'cherryEye', who: 'cherry', slotName: '樱桃·眼部', effect: '亲密度 +2', price: 55, icon: '🥽', img: 'img/items/goggles.png' },
+    { id: 'compass', name: '指南针', slot: 'qiaoHand', who: 'qiao', slotName: '邱少云·手部', effect: '装饰', price: 60, icon: '🧭', img: 'img/items/compass.png' },
+    { id: 'bugle', name: '小军号', slot: 'qiaoHand', who: 'qiao', slotName: '邱少云·手部', effect: '解锁吹号动画', price: 60, icon: '🎺', img: 'img/items/bugle.png' },
+    { id: 'saddle', name: '警用鞍具', slot: 'cherryBody', who: 'cherry', slotName: '樱桃·身体', effect: '亲密度 +2', price: 60, icon: '🐎', img: 'img/items/saddle.png' },
+    { id: 'telescope', name: '望远镜', slot: 'qiaoHand', who: 'qiao', slotName: '邱少云·手部', effect: '装饰', price: 80, icon: '🔭', img: 'img/items/telescope.png' }
+  ]
+  // 板块四：军事装备库（武器收藏，兑换后陈列展示，不穿戴）
+  const WEAPONS = [
+    { id: 'grenade', name: '手榴弹', price: 50, icon: '💣', img: 'img/items/grenade.png' },
+    { id: 'pistol', name: '手枪', price: 60, icon: '🔫', img: 'img/items/pistol.png' },
+    { id: 'rifle', name: '步枪', price: 100, icon: '🔫', img: 'img/items/rifle.png' },
+    { id: 'cannon', name: '大炮', price: 150, icon: '💥', img: 'img/items/cannon.png' },
+    { id: 'plane', name: '飞机模型', price: 200, icon: '✈️', img: 'img/items/plane.png' },
+    { id: 'dongfeng', name: '东风模型', price: 300, icon: '🚀', img: 'img/items/dongfeng.png' }
   ]
 
   function defaultUser() {
@@ -39,6 +46,11 @@ window.Store = (function () {
       cherryFullness: 0, cherryIntimacyScore: 0, cherryIntimacyLevel: 1,
       ownedItems: [], equippedCherry: [], equippedQiao: [], background: false, photoFrame: false,
       militaryRank: 0,
+      // 营地物资站（重构字段）
+      currentSkin: null,
+      ownedSkins: [],
+      equippedItems: { waterBottle: false, backpack: false, compass: false, bugle: false, telescope: false, goggles: false, saddle: false, tracker: false },
+      militaryCollection: { grenade: false, pistol: false, rifle: false, cannon: false, plane: false, dongfeng: false },
       dailyTasks: { scout: false, artillery: false, intel_words: false, intel_special: false, rifle: false, logistics: false },
       retryCount: { scout: 0, artillery: 0, intel_words: 0, intel_special: 0, rifle: 0, logistics: 0 },
       _fullCountedToday: false,
@@ -153,7 +165,7 @@ window.Store = (function () {
   }
 
   function addIntimacy(u, n) {
-    u.cherryIntimacyScore += n
+    u.cherryIntimacyScore = Math.max(0, (u.cherryIntimacyScore || 0) + n)
     u.cherryIntimacyLevel = Math.min(10, Math.floor(u.cherryIntimacyScore / 10) + 1)
   }
   function stageName(level) {
@@ -218,56 +230,96 @@ window.Store = (function () {
     return user.totalScore
   }
 
-  // ---- 营地物资站 ----
-  function getShop() { return SHOP }
-  function getVestColors() { return VEST_COLORS }
-  function getVestColor() { return user.vestColor || '#4A6B3D' }
-  function setVestColor(c) {
-    if (VEST_COLORS.some(v => v.color === c)) { user.vestColor = c; save(); return true }
-    return false
+  // ---- 营地物资站（重构后）----
+  function getFoods() { return FOODS }
+  function getSkins() { return SKINS }
+  function getEquips() { return EQUIPS }
+  function getWeapons() { return WEAPONS }
+  // 军衔等级：基于 window.RANK 的累计训练天数
+  function rankLevel() {
+    const name = getRankInfo().name
+    const idx = window.RANK.RANKS.findIndex(r => r.name === name)
+    return idx < 0 ? 0 : idx
   }
-  // 穿戴：同部位只能穿一件，新装扮自动替换旧装扮（旧装扮回到"已拥有"库存）
-  function equipItem(id) {
-    const item = SHOP.find(s => s.id === id)
-    if (!item || !item.wear || !user.ownedItems.includes(id)) return false
-    const arr = item.wear === 'cherry' ? user.equippedCherry : user.equippedQiao
-    if (item.slot) {
-      for (let i = arr.length - 1; i >= 0; i--) {
-        const o = SHOP.find(s => s.id === arr[i])
-        if (o && o.slot === item.slot && o.id !== id) arr.splice(i, 1)
-      }
+  function skinUnlocked(skin) {
+    const idx = window.RANK.RANKS.findIndex(r => r.name === skin.rank)
+    return rankLevel() >= (idx < 0 ? 99 : idx)
+  }
+  function ownsSkin(id) { return user.ownedSkins.includes(id) }
+  function setSkin(id) { if (user.ownedSkins.includes(id)) { user.currentSkin = id; save(); return true } return false }
+  function ownsEquip(id) { return user.ownedItems.includes(id) }
+  function isEquipOn(id) { return !!user.equippedItems[id] }
+  function ownsWeapon(id) { return !!user.militaryCollection[id] }
+
+  // 板块一：战备口粮（消耗品）
+  function buyFood(f) {
+    if (!f) return null
+    if (user.totalScore < f.price) return { ok: false, msg: '子弹不够，去做任务赚吧！' }
+    user.totalScore -= f.price
+    user.cherryFullness = Math.min(100, (user.cherryFullness || 0) + f.full)
+    save()
+    return { ok: true, kind: 'food', msg: '樱桃大口吃起来啦 🦴 谢谢主人！饱腹 +' + f.full + '%' }
+  }
+  // 板块二：军衔装束（皮肤）
+  function buySkin(s) {
+    if (!s) return null
+    if (!skinUnlocked(s)) return { ok: false, msg: '🔒 晋升「' + s.rank + '」后解锁' }
+    if (user.ownedSkins.includes(s.id)) { user.currentSkin = s.id; save(); return { ok: true, kind: 'skin', msg: '已切换为「' + s.name + '」' } }
+    if (user.totalScore < s.price) return { ok: false, msg: '子弹不够，去做任务赚吧！' }
+    user.totalScore -= s.price
+    user.ownedSkins.push(s.id)
+    user.currentSkin = s.id
+    save()
+    return { ok: true, kind: 'skin', msg: '购买并穿戴「' + s.name + '」成功！' }
+  }
+  // 板块三：装备宝库（配件，购买后需点击穿戴）
+  function buyEquip(e) {
+    if (!e) return null
+    if (user.ownedItems.includes(e.id)) return { ok: false, msg: '已拥有' }
+    if (user.totalScore < e.price) return { ok: false, msg: '子弹不够，去做任务赚吧！' }
+    user.totalScore -= e.price
+    user.ownedItems.push(e.id)
+    save()
+    return { ok: true, kind: 'equip', msg: '购买成功，点击穿戴「' + e.name + '」' }
+  }
+  // 穿戴/脱下配件（同部位互斥）
+  function toggleEquip(id) {
+    const e = EQUIPS.find(x => x.id === id)
+    if (!e || !user.ownedItems.includes(id)) return false
+    const m = (e.effect.match(/([0-9]+)/) || [])[1]
+    if (user.equippedItems[id]) {
+      user.equippedItems[id] = false
+      if (m) addIntimacy(user, -parseInt(m))
+    } else {
+      // 同部位其他装备脱下（手部 compass/bugle/telescope 互斥）
+      EQUIPS.forEach(o => { if (o.slot === e.slot && o.id !== id) user.equippedItems[o.id] = false })
+      user.equippedItems[id] = true
+      if (m) addIntimacy(user, parseInt(m))
     }
-    if (!arr.includes(id)) arr.push(id)
     save()
     return true
   }
-  // 脱下：该部位恢复默认形象，物品回到"已拥有"状态
-  function unequipItem(id) {
-    const item = SHOP.find(s => s.id === id)
-    if (!item || !item.wear) return false
-    const arr = item.wear === 'cherry' ? user.equippedCherry : user.equippedQiao
-    const idx = arr.indexOf(id)
-    if (idx >= 0) { arr.splice(idx, 1); save(); return true }
-    return false
-  }
-  function isEquipped(id) {
-    return user.equippedCherry.includes(id) || user.equippedQiao.includes(id)
-  }
-  function buyItem(id) {
-    const item = SHOP.find(s => s.id === id)
-    if (!item) return { ok: false, msg: '物品不存在' }
-    // 消耗品（战备口粮）可反复兑换；一次性装扮才走"已拥有"拦截
-    if (!item.consumable && user.ownedItems.includes(id)) return { ok: false, msg: '已拥有' }
-    if (user.totalScore < item.price) return { ok: false, msg: '子弹不够，去做任务赚吧！' }
-    user.totalScore -= item.price
-    if (!item.consumable) user.ownedItems.push(id)
-    if (item.special === 'background') user.background = true
-    if (item.special === 'frame') user.photoFrame = true
-    if (item.apply) item.apply(user)
+  // 板块四：军事装备库（武器收藏）
+  function buyWeapon(w) {
+    if (!w) return null
+    if (user.militaryCollection[w.id]) return { ok: false, msg: '已收藏' }
+    if (user.totalScore < w.price) return { ok: false, msg: '子弹不够，去做任务赚吧！' }
+    user.totalScore -= w.price
+    user.militaryCollection[w.id] = true
     save()
-    // 装扮类兑换后即时穿戴（同部位自动替换），形象即时更新
-    if (item.wear) equipItem(id)
-    return { ok: true }
+    return { ok: true, kind: 'weapon', msg: '已收藏「' + w.name + '」！' }
+  }
+  // 统一购买入口（按 id 自动判定板块）
+  function buyItem(id) {
+    let r = buyFood(FOODS.find(x => x.id === id))
+    if (r) return r
+    r = buySkin(SKINS.find(x => x.id === id))
+    if (r) return r
+    r = buyEquip(EQUIPS.find(x => x.id === id))
+    if (r) return r
+    r = buyWeapon(WEAPONS.find(x => x.id === id))
+    if (r) return r
+    return { ok: false, msg: '物品不存在' }
   }
 
   // ---- 家长后台 ----
@@ -360,8 +412,9 @@ window.Store = (function () {
     init: load, save, todayStr, getWeekday, getWeekNumber, getTodayKeys,
     getUser, getRankInfo,
     isPassed, recordPass, canRetry, incRetry, clickCherry, adjustBullets, isAssault,
-    getShop, buyItem, equipItem, unequipItem, isEquipped,
-    getVestColors, getVestColor, setVestColor,
+    getFoods, getSkins, getEquips, getWeapons,
+    buyItem, buyFood, buySkin, buyEquip, buyWeapon, toggleEquip,
+    skinUnlocked, ownsSkin, setSkin, ownsEquip, isEquipOn, ownsWeapon,
     checkAdminPassword, setAdminPassword, getActiveUnits, setActiveUnits, getCurrentUnit, setCurrentUnit, getCurrentLesson, setCurrentLesson,
     getImportedWords, addImportedWord, clearImportedWords,
     getArticles, saveArticle, deleteArticle,
