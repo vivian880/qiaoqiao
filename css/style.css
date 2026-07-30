@@ -231,14 +231,14 @@ ruby rt { font-size: 11px; color: #999; }
 
 /* 商店 */
 .shop-cat { color: #fff; font-size: 18px; font-weight: bold; margin: 14px 16px 6px; }
-.shop-grid { display: flex; flex-wrap: wrap; padding: 0 10px; }
-.shop-item { width: 46%; background: #fff; border-radius: 16px; padding: 12px; margin: 6px; text-align: center; }
+.shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 10px; }
+.shop-item { width: auto; background: #fff; border-radius: 16px; padding: 12px; margin: 0; text-align: center; }
 .shop-icon { font-size: 34px; height: 90px; display: flex; align-items: center; justify-content: center; }
 .shop-icon img { max-width: 100%; max-height: 90px; object-fit: contain; display: block; }
 .coll-icon { height: 70px; display: flex; align-items: center; justify-content: center; }
 .coll-icon img { max-width: 100%; max-height: 70px; object-fit: contain; display: block; }
 .shop-item, .coll-item { position: relative; }
-.shop-name { font-size: 17px; font-weight: bold; color: #4A6B3D; }
+.shop-name { font-size: 16px; font-weight: bold; color: #4A6B3D; white-space: nowrap; }
 .shop-effect { font-size: 12px; color: #888; min-height: 30px; margin: 4px 0; }
 .shop-price { font-size: 15px; color: #E98BA0; font-weight: bold; }
 .shop-buy { background: #4A6B3D; color: #fff; border-radius: 14px; padding: 8px; margin-top: 6px; font-weight: bold; cursor: pointer; }

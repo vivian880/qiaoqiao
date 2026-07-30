@@ -429,7 +429,7 @@
       const worn = u.currentSkin === it.id
       const owned = Store.ownsSkin(it.id)
       let btn
-      if (!unlocked) btn = `<div class="shop-buy locked" data-action="buy-poor">🔒 晋升${it.rank}后解锁 · ${it.price}🔸</div>`
+      if (!unlocked) btn = `<div class="shop-buy locked" data-action="buy-poor">🔒 ${it.price}🔸</div>`
       else if (worn) btn = `<div class="shop-owned on">✅ 已穿戴</div>`
       else if (owned) btn = `<div class="shop-owned off" data-action="wear-skin" data-id="${it.id}">👕 点击穿戴</div>`
       else btn = `<div class="shop-buy" data-action="buy-skin" data-id="${it.id}">购买并穿戴 ${it.price}🔸</div>`

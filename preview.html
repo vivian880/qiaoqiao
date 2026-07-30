@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>穿戴预览测试台 · 营地物资站</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f0f4ec; color: #2f4a25; padding: 14px;
+  }
+  h1 { font-size: 18px; margin-bottom: 4px; }
+  .sub { font-size: 12px; color: #7a8a70; margin-bottom: 12px; }
+  .layout { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+
+  /* ===== 舞台 ===== */
+  .stage-card { flex: 1 1 480px; min-width: 340px; background: #fff; border-radius: 16px; padding: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+  .stage {
+    position: relative; width: 100%; height: 440px; border-radius: 14px; overflow: hidden;
+    background: linear-gradient(180deg, #EAF6FD 0%, #D6EAF8 100%);
+    user-select: none; touch-action: none;
+  }
+  .char { position: absolute; bottom: 3%; }
+  .char > img.base { display: block; height: 100%; width: auto; pointer-events: none; }
+  #qiaoBox { left: 6%; height: 84%; }
+  #cherryBox { right: 5%; height: 58%; }
+
+  .overlay {
+    position: absolute; cursor: grab; transform-origin: center center;
+  }
+  .overlay img { display: block; width: 100%; height: auto; pointer-events: none; filter: drop-shadow(0 2px 3px rgba(0,0,0,.18)); }
+  .overlay.sel { outline: 2px dashed #ff9800; outline-offset: 2px; border-radius: 6px; }
+  .overlay.behind { z-index: 0; }
+  .char > img.base { position: relative; z-index: 1; }
+  .overlay.front { z-index: 2; }
+
+  .worn-bar { margin-top: 8px; font-size: 12px; color: #55694c; min-height: 22px; }
+  .worn-chip { display: inline-block; background: #e8f3e0; border-radius: 20px; padding: 2px 10px; margin: 2px 4px 2px 0; }
+
+  /* ===== 控制面板 ===== */
+  .panel { flex: 1 1 320px; min-width: 300px; display: flex; flex-direction: column; gap: 12px; }
+  .card { background: #fff; border-radius: 14px; padding: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+  .card h2 { font-size: 14px; margin-bottom: 8px; color: #3b5230; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: 1.5px solid #cfdec3; border-radius: 10px; padding: 6px 10px; font-size: 13px;
+    cursor: pointer; background: #fafdf7; display: flex; align-items: center; gap: 6px; transition: all .15s;
+  }
+  .chip img { width: 26px; height: 26px; object-fit: contain; }
+  .chip.on { background: #4caf50; border-color: #4caf50; color: #fff; }
+  .chip.sel-chip { box-shadow: 0 0 0 2px #ff9800; }
+  .group-tag { width: 100%; font-size: 12px; color: #8a9a80; margin: 4px 0 0; }
+
+  .sliders label { display: block; font-size: 12px; color: #55694c; margin: 8px 0 2px; }
+  .sliders input[type=range] { width: 100%; }
+  .sliders .val { float: right; color: #999; }
+  .btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  button {
+    border: none; border-radius: 10px; padding: 8px 14px; font-size: 13px; cursor: pointer;
+    background: #4caf50; color: #fff;
+  }
+  button.ghost { background: #eef4e9; color: #3b5230; }
+  textarea { width: 100%; height: 120px; margin-top: 8px; font-size: 11px; font-family: Consolas, monospace; border: 1px solid #dde7d5; border-radius: 8px; padding: 8px; display: none; }
+  .tip { font-size: 12px; color: #999; margin-top: 6px; line-height: 1.6; }
+</style>
+</head>
+<body>
+  <h1>🎖️ 穿戴预览测试台</h1>
+  <div class="sub">切换军衔装束、勾选道具，直接查看邱少云 / 樱桃的穿戴效果。选中道具后可<b>拖动调位置</b>，用滑杆调大小和角度，最后可导出坐标。</div>
+
+  <div class="layout">
+    <div class="stage-card">
+      <div class="stage" id="stage">
+        <div class="char" id="qiaoBox">
+          <img class="base" id="qiaoImg" src="img/qiaoqiao.png" alt="邱少云">
+        </div>
+        <div class="char" id="cherryBox">
+          <img class="base" src="images/cherry.png" alt="樱桃">
+        </div>
+      </div>
+      <div class="worn-bar" id="wornBar">还没有穿戴装备</div>
+    </div>
+
+    <div class="panel">
+      <div class="card">
+        <h2>👕 军衔装束（邱少云）</h2>
+        <div class="chips" id="skinChips"></div>
+      </div>
+
+      <div class="card">
+        <h2>🎒 装备道具（点击穿/脱，再点一下选中调整）</h2>
+        <div class="chips" id="equipChips"></div>
+        <div class="tip">同一部位只能穿一件（如手部的指南针 / 军号 / 望远镜互斥），和正式页面规则一致。</div>
+      </div>
+
+      <div class="card sliders" id="adjCard" style="display:none">
+        <h2>🔧 调整选中道具：<span id="adjName"></span></h2>
+        <label>大小 <span class="val" id="wVal"></span></label>
+        <input type="range" id="wRange" min="8" max="80" step="1">
+        <label>旋转 <span class="val" id="rVal"></span></label>
+        <input type="range" id="rRange" min="-90" max="90" step="1">
+        <label><input type="checkbox" id="behindChk"> 放到角色身后（如背包）</label>
+        <div class="tip">💡 在左边舞台上直接拖动道具即可改位置。</div>
+      </div>
+
+      <div class="card">
+        <h2>📋 导出穿戴坐标</h2>
+        <div class="btn-row">
+          <button id="exportBtn">导出当前配置</button>
+          <button class="ghost" id="resetBtn">全部重置</button>
+        </div>
+        <textarea id="exportBox" readonly></textarea>
+        <div class="tip">调好满意的位置后点导出，把结果发给助手即可固化到正式页面。</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ===== 数据（与 store.js 保持一致）=====
+const SKINS = [
+  { id: '', name: '新兵（默认）', img: 'img/qiaoqiao.png' },
+  { id: 'skin_1', name: '班长装束', img: 'img/skin_1.png' },
+  { id: 'skin_2', name: '连长装束', img: 'img/skin_2.png' },
+  { id: 'skin_3', name: '营长装束', img: 'img/skin_3.png' },
+  { id: 'skin_4', name: '团长装束', img: 'img/skin_4.png' }
+];
+const EQUIPS = [
+  { id: 'waterBottle', name: '水壶',      slot: 'qiaoWaist',  who: 'qiao',   img: 'img/items/water_bottle.png' },
+  { id: 'backpack',   name: '作战背包',   slot: 'qiaoBack',   who: 'qiao',   img: 'img/items/backpack.png' },
+  { id: 'compass',    name: '指南针',     slot: 'qiaoHand',   who: 'qiao',   img: 'img/items/compass.png' },
+  { id: 'bugle',      name: '小军号',     slot: 'qiaoHand',   who: 'qiao',   img: 'img/items/bugle.png' },
+  { id: 'telescope',  name: '望远镜',     slot: 'qiaoHand',   who: 'qiao',   img: 'img/items/telescope.png' },
+  { id: 'tracker',    name: '追踪器',     slot: 'cherryNeck', who: 'cherry', img: 'img/items/tracker.png' },
+  { id: 'goggles',    name: '战术护目镜', slot: 'cherryEye',  who: 'cherry', img: 'img/items/goggles.png' },
+  { id: 'saddle',     name: '警用鞍具',   slot: 'cherryBody', who: 'cherry', img: 'img/items/saddle.png' }
+];
+// 默认位置：x/y 为道具中心在角色框内的百分比，w 为宽度占角色框宽度的百分比
+const DEFAULT_POS = {
+  waterBottle: { x: 59, y: 69, w: 19, rot: -10, behind: false },
+  backpack:    { x: 40, y: 51, w: 33, rot: -7,  behind: true  },
+  compass:     { x: 60, y: 68, w: 9,  rot: 27,  behind: false },
+  bugle:       { x: 52, y: 68, w: 29, rot: -25, behind: false },
+  telescope:   { x: 52, y: 37, w: 24, rot: 5,   behind: false },
+  tracker:     { x: 44, y: 86, w: 16, rot: -13, behind: false },
+  goggles:     { x: 50, y: 25, w: 29, rot: -14, behind: false },
+  saddle:      { x: 87, y: 70, w: 42, rot: 4,   behind: true  }
+};
+
+const state = {
+  skin: '',
+  worn: {},                       // id -> true
+  pos: JSON.parse(JSON.stringify(DEFAULT_POS)),
+  selected: null
+};
+
+const $ = s => document.querySelector(s);
+const qiaoBox = $('#qiaoBox'), cherryBox = $('#cherryBox');
+
+// ===== 渲染皮肤选择 =====
+function renderSkins() {
+  $('#skinChips').innerHTML = SKINS.map(s =>
+    `<div class="chip ${state.skin === s.id ? 'on' : ''}" data-skin="${s.id}">${s.name}</div>`
+  ).join('');
+}
+$('#skinChips').addEventListener('click', e => {
+  const c = e.target.closest('[data-skin]'); if (!c) return;
+  state.skin = c.dataset.skin;
+  $('#qiaoImg').src = state.skin ? ('img/' + state.skin + '.png') : 'img/qiaoqiao.png';
+  renderSkins();
+});
+
+// ===== 渲染道具 chips =====
+function renderChips() {
+  const groups = [['qiao', '—— 邱少云 ——'], ['cherry', '—— 樱桃 ——']];
+  let h = '';
+  groups.forEach(([who, tag]) => {
+    h += `<div class="group-tag">${tag}</div>`;
+    EQUIPS.filter(e => e.who === who).forEach(e => {
+      const on = !!state.worn[e.id];
+      const sel = state.selected === e.id;
+      h += `<div class="chip ${on ? 'on' : ''} ${sel ? 'sel-chip' : ''}" data-eq="${e.id}">
+              <img src="${e.img}" alt="">${e.name}</div>`;
+    });
+  });
+  $('#equipChips').innerHTML = h;
+}
+$('#equipChips').addEventListener('click', e => {
+  const c = e.target.closest('[data-eq]'); if (!c) return;
+  const id = c.dataset.eq;
+  const eq = EQUIPS.find(x => x.id === id);
+  if (!state.worn[id]) {
+    // 穿上：同部位互斥
+    EQUIPS.forEach(o => { if (o.slot === eq.slot) delete state.worn[o.id]; });
+    state.worn[id] = true;
+    state.selected = id;
+  } else if (state.selected !== id) {
+    state.selected = id;          // 已穿 → 第二次点击选中
+  } else {
+    delete state.worn[id];        // 已选中 → 再点脱下
+    state.selected = null;
+  }
+  renderAll();
+});
+
+// ===== 渲染舞台叠加 =====
+function renderOverlays() {
+  document.querySelectorAll('.overlay').forEach(n => n.remove());
+  EQUIPS.forEach(eq => {
+    if (!state.worn[eq.id]) return;
+    const box = eq.who === 'qiao' ? qiaoBox : cherryBox;
+    const p = state.pos[eq.id];
+    const el = document.createElement('div');
+    el.className = 'overlay ' + (p.behind ? 'behind' : 'front') + (state.selected === eq.id ? ' sel' : '');
+    el.dataset.id = eq.id;
+    el.style.width = p.w + '%';
+    el.style.left = p.x + '%';
+    el.style.top = p.y + '%';
+    el.style.transform = `translate(-50%,-50%) rotate(${p.rot}deg)`;
+    el.innerHTML = `<img src="${eq.img}" alt="${eq.name}">`;
+    box.appendChild(el);
+  });
+  // 穿戴条
+  const names = EQUIPS.filter(e => state.worn[e.id]).map(e => `<span class="worn-chip">${e.name} ✔</span>`);
+  $('#wornBar').innerHTML = names.length ? names.join('') : '还没有穿戴装备';
+}
+
+// ===== 调整面板 =====
+function renderAdj() {
+  const id = state.selected;
+  if (!id || !state.worn[id]) { $('#adjCard').style.display = 'none'; return; }
+  const eq = EQUIPS.find(x => x.id === id), p = state.pos[id];
+  $('#adjCard').style.display = '';
+  $('#adjName').textContent = eq.name;
+  $('#wRange').value = p.w;  $('#wVal').textContent = p.w + '%';
+  $('#rRange').value = p.rot; $('#rVal').textContent = p.rot + '°';
+  $('#behindChk').checked = p.behind;
+}
+$('#wRange').addEventListener('input', e => {
+  const p = state.pos[state.selected]; if (!p) return;
+  p.w = +e.target.value; $('#wVal').textContent = p.w + '%'; renderOverlays();
+});
+$('#rRange').addEventListener('input', e => {
+  const p = state.pos[state.selected]; if (!p) return;
+  p.rot = +e.target.value; $('#rVal').textContent = p.rot + '°'; renderOverlays();
+});
+$('#behindChk').addEventListener('change', e => {
+  const p = state.pos[state.selected]; if (!p) return;
+  p.behind = e.target.checked; renderOverlays();
+});
+
+// ===== 拖动 =====
+let drag = null;
+$('#stage').addEventListener('pointerdown', e => {
+  const ov = e.target.closest('.overlay'); if (!ov) return;
+  const id = ov.dataset.id;
+  state.selected = id; renderChips(); renderAdj(); renderOverlays();
+  const box = EQUIPS.find(x => x.id === id).who === 'qiao' ? qiaoBox : cherryBox;
+  drag = { id, box, rect: box.getBoundingClientRect() };
+  e.preventDefault();
+});
+window.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const p = state.pos[drag.id];
+  p.x = Math.round(Math.min(120, Math.max(-20, (e.clientX - drag.rect.left) / drag.rect.width * 100)));
+  p.y = Math.round(Math.min(120, Math.max(-20, (e.clientY - drag.rect.top) / drag.rect.height * 100)));
+  renderOverlays();
+});
+window.addEventListener('pointerup', () => { drag = null; });
+
+// ===== 导出 / 重置 =====
+$('#exportBtn').addEventListener('click', () => {
+  const out = { skin: state.skin || 'default', worn: Object.keys(state.worn), positions: {} };
+  Object.keys(state.pos).forEach(k => { out.positions[k] = state.pos[k]; });
+  const box = $('#exportBox');
+  box.style.display = 'block';
+  box.value = JSON.stringify(out, null, 2);
+  box.select();
+  try { document.execCommand('copy'); } catch (_) {}
+});
+$('#resetBtn').addEventListener('click', () => {
+  state.worn = {}; state.selected = null;
+  state.pos = JSON.parse(JSON.stringify(DEFAULT_POS));
+  $('#exportBox').style.display = 'none';
+  renderAll();
+});
+
+function renderAll() { renderSkins(); renderChips(); renderOverlays(); renderAdj(); }
+renderAll();
+</script>
+</body>
+</html>
