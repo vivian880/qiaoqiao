@@ -79,20 +79,20 @@ body {
   background: linear-gradient(180deg, #EAF6FD 0%, #D6EAF8 100%);
 }
 .scene-stage { position: absolute; inset: 0; z-index: 2;
-  display: flex; align-items: flex-end; justify-content: space-between; gap: 2%; padding: 0 4% 3%; }
-/* 角色统一按"宽度"约束缩放：人物占场景宽约 42%、樱桃约 30%，两者始终分居左右、互不重叠，且绝不超出场景框 */
+  display: flex; align-items: flex-end; justify-content: center; gap: 3%; padding: 0 3% 3%; }
+/* 角色统一按"高度"缩放，同时限制最大宽度防重叠；无论皮肤图是方是长，都完整显示在场景框内 */
 .scene-char { position: relative; display: flex; align-items: flex-end; flex: 0 0 auto; }
-/* 角色内层：基础形象 + 穿戴道具叠加，一起做动画；宽度=角色宽度，保证道具百分比坐标准确 */
-.char-inner { position: relative; width: 100%; }
-.char-inner .char-base { position: relative; z-index: 1; display: block; width: 100%; height: auto; max-width: none; }
+/* 角色内层：基础形象 + 穿戴道具叠加，一起做动画；max宽高限制保证不溢出 */
+.char-inner { position: relative; height: 100%; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.char-inner .char-base { position: relative; z-index: 1; display: block; max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; }
 .scene-ov { position: absolute; pointer-events: none; }
-.scene-ov img { display: block; width: 100%; height: auto; filter: drop-shadow(0 2px 3px rgba(0,0,0,.18)); }
+.scene-ov img { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,.18)); }
 .scene-ov.behind { z-index: 0; }
 .scene-ov.front { z-index: 2; }
-/* 邱少云：左侧主体，宽度占展示区约 42% */
-.qiao-char { width: 42%; }
-/* 樱桃：右侧脚边，宽度占约 30%，更矮一点 */
-.cherry-char { width: 30%; position: relative; }
+/* 邱少云：左侧主体，高度占展示区约 84%，最大宽度不超 52% */
+.qiao-char { height: 84%; max-width: 52%; }
+/* 樱桃：右侧脚边，高度占约 64%，最大宽度不超 38% */
+.cherry-char { height: 64%; max-width: 38%; position: relative; }
 /* 点击樱桃时的开心弹跳反馈 */
 .cherry-char.eating .char-inner { animation: cherryPop .45s ease-in-out 6; }
 @keyframes cherryPop {
@@ -234,10 +234,10 @@ ruby rt { font-size: 11px; color: #999; }
 
 /* 商店 */
 .shop-cat { color: #fff; font-size: 18px; font-weight: bold; margin: 14px 16px 6px; }
-.shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 10px; }
-.shop-item { width: auto; background: #fff; border-radius: 16px; padding: 12px; margin: 0; text-align: center; }
-.shop-icon { font-size: 34px; height: 90px; display: flex; align-items: center; justify-content: center; }
-.shop-icon img { max-width: 100%; max-height: 90px; object-fit: contain; display: block; }
+.shop-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 2px; }
+.shop-item { width: auto; min-width: 0; overflow: hidden; background: #fff; border-radius: 16px; padding: 12px; margin: 0; text-align: center; }
+.shop-icon { font-size: 34px; height: 90px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.shop-icon img { max-width: 100%; max-height: 90px; width: auto; height: auto; object-fit: contain; display: block; }
 .coll-icon { height: 70px; display: flex; align-items: center; justify-content: center; }
 .coll-icon img { max-width: 100%; max-height: 70px; object-fit: contain; display: block; }
 .shop-item, .coll-item { position: relative; }
@@ -330,10 +330,10 @@ ruby rt { font-size: 11px; color: #999; }
   .scope-grid { grid-template-columns: 1fr; }
   .scope-card { padding: 14px; gap: 8px; }
   .scope-card .sc-num { font-size: 28px; }
-  /* 手机端：高度驱动放大角色——先给容器确定百分比高度，img 再 100% 填满，避免百分比相对无高度父级失效被原图撑爆 */
+  /* 手机端：高度驱动放大角色，同时限制最大宽度防重叠 */
   .scene-wrap { height: 320px; height: 42dvh; }
-  .qiao-char { width: 44%; }
-  .cherry-char { width: 30%; }
+  .qiao-char { height: 84%; max-width: 54%; }
+  .cherry-char { height: 64%; max-width: 40%; }
 }
 
 /* 可视化筛选 · 出题范围 */
@@ -437,7 +437,7 @@ ruby rt { font-size: 11px; color: #999; }
 }
 .shop-tab.on { background: #fff; color: #4A6B3D; border-color: #c9c9c9; }
 
-.shop-panel { background: #fff; margin: 0 10px 14px; border-radius: 0 0 16px 16px; padding: 12px 8px 16px; border: 2px solid #c9c9c9; border-top: none; }
+.shop-panel { background: #fff; margin: 0 8px 14px; border-radius: 0 0 16px 16px; padding: 12px 6px 16px; border: 2px solid #c9c9c9; border-top: none; overflow: hidden; }
 .panel-tip { font-size: 13px; color: #8a8a8a; line-height: 1.5; margin: 2px 4px 12px; padding: 8px 10px; background: #f5f8f2; border-radius: 10px; }
 
 /* 军衔装束：皮肤卡片网格 */
