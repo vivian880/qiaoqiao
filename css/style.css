@@ -91,8 +91,8 @@ body {
 .scene-ov.front { z-index: 2; }
 /* 邱少云：左侧主体，高度占展示区 84% */
 .qiao-char { height: 84%; }
-/* 樱桃：邱少云右侧脚边，稍微矮一点，高度占 64% */
-.cherry-char { height: 64%; position: relative; }
+/* 樱桃：邱少云右侧脚边，稍微矮一点，高度占 60% */
+.cherry-char { height: 60%; position: relative; }
 /* 点击樱桃时的开心弹跳反馈 */
 .cherry-char.eating .char-inner { animation: cherryPop .45s ease-in-out 6; }
 @keyframes cherryPop {
@@ -336,7 +336,7 @@ ruby rt { font-size: 11px; color: #999; }
   .qiao-char { position: absolute; left: -3%; bottom: 3%; height: 80%; flex: none; max-width: none; }
   .qiao-char .char-inner { height: 100%; }
   .qiao-char .char-base { height: 100%; width: auto; max-width: none; }
-  .cherry-char { position: absolute; right: 0; bottom: 3%; height: 64%; flex: none; max-width: none; }
+  .cherry-char { position: absolute; right: 0; bottom: 3%; height: 58%; flex: none; max-width: none; }
   .cherry-char .char-inner { height: 100%; }
   .cherry-char .char-base { height: 100%; width: auto; max-width: none; }
 }
