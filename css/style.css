@@ -19,7 +19,7 @@ body {
 .big-btn {
   display: block; width: 92%; margin: 14px auto;
   min-height: 52px; border: none; border-radius: 16px;
-  font-size: 20px; font-weight: bold; color: #fff;
+  font-size: 18px; font-weight: bold; color: #fff; white-space: nowrap;
   box-shadow: 0 4px 0 rgba(0,0,0,0.18); cursor: pointer;
 }
 .btn-green { background: #4A6B3D; }
@@ -79,20 +79,20 @@ body {
   background: linear-gradient(180deg, #EAF6FD 0%, #D6EAF8 100%);
 }
 .scene-stage { position: absolute; inset: 0; z-index: 2;
-  display: flex; align-items: flex-end; justify-content: center; gap: 0.5%; padding: 0 2% 3%; }
-/* 角色统一按"高度"约束缩放：无论皮肤图画布多大，视觉大小都和默认形象一致，绝不超出场景框 */
-.scene-char { position: relative; display: block; flex: 0 0 auto; }
-/* 角色内层：基础形象 + 穿戴道具叠加，一起做动画；宽度收缩至图片实际宽度，保证道具百分比坐标准确 */
-.char-inner { position: relative; height: 100%; width: fit-content; margin: 0 auto; }
-.char-inner .char-base { position: relative; z-index: 1; display: block; height: 100%; width: auto; max-width: none; }
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 2%; padding: 0 4% 3%; }
+/* 角色统一按"宽度"约束缩放：人物占场景宽约 42%、樱桃约 30%，两者始终分居左右、互不重叠，且绝不超出场景框 */
+.scene-char { position: relative; display: flex; align-items: flex-end; flex: 0 0 auto; }
+/* 角色内层：基础形象 + 穿戴道具叠加，一起做动画；宽度=角色宽度，保证道具百分比坐标准确 */
+.char-inner { position: relative; width: 100%; }
+.char-inner .char-base { position: relative; z-index: 1; display: block; width: 100%; height: auto; max-width: none; }
 .scene-ov { position: absolute; pointer-events: none; }
 .scene-ov img { display: block; width: 100%; height: auto; filter: drop-shadow(0 2px 3px rgba(0,0,0,.18)); }
 .scene-ov.behind { z-index: 0; }
 .scene-ov.front { z-index: 2; }
-/* 邱少云：左侧主体，高度占展示区 84% */
-.qiao-char { height: 84%; }
-/* 樱桃：邱少云右侧脚边，稍微矮一点，高度占 64% */
-.cherry-char { height: 64%; position: relative; }
+/* 邱少云：左侧主体，宽度占展示区约 42% */
+.qiao-char { width: 42%; }
+/* 樱桃：右侧脚边，宽度占约 30%，更矮一点 */
+.cherry-char { width: 30%; position: relative; }
 /* 点击樱桃时的开心弹跳反馈 */
 .cherry-char.eating .char-inner { animation: cherryPop .45s ease-in-out 6; }
 @keyframes cherryPop {
@@ -332,13 +332,8 @@ ruby rt { font-size: 11px; color: #999; }
   .scope-card .sc-num { font-size: 28px; }
   /* 手机端：高度驱动放大角色——先给容器确定百分比高度，img 再 100% 填满，避免百分比相对无高度父级失效被原图撑爆 */
   .scene-wrap { height: 320px; height: 42dvh; }
-  .scene-stage { padding: 0 3% 3%; }
-  .qiao-char { position: absolute; left: -3%; bottom: 3%; height: 80%; flex: none; max-width: none; }
-  .qiao-char .char-inner { height: 100%; }
-  .qiao-char .char-base { height: 100%; width: auto; max-width: none; }
-  .cherry-char { position: absolute; right: 2%; bottom: 3%; height: 64%; flex: none; max-width: none; }
-  .cherry-char .char-inner { height: 100%; }
-  .cherry-char .char-base { height: 100%; width: auto; max-width: none; }
+  .qiao-char { width: 44%; }
+  .cherry-char { width: 30%; }
 }
 
 /* 可视化筛选 · 出题范围 */
@@ -430,7 +425,7 @@ ruby rt { font-size: 11px; color: #999; }
 
 /* ===== 营地物资站：四大板块 Tab 重构 ===== */
 .shop-head { display: flex; align-items: center; gap: 8px; padding: 14px 14px 6px; color: #fff; flex-wrap: wrap; }
-.shop-head .quiz-title { flex: 1; font-size: 19px; font-weight: bold; }
+.shop-head .quiz-title { flex: 1; font-size: 16px; font-weight: bold; white-space: nowrap; }
 .shop-bullets { background: #2f4a25; border-radius: 12px; padding: 4px 10px; font-size: 15px; font-weight: bold; }
 .shop-rank { background: #8a6d2b; border-radius: 12px; padding: 4px 10px; font-size: 14px; font-weight: bold; }
 
@@ -442,23 +437,23 @@ ruby rt { font-size: 11px; color: #999; }
 }
 .shop-tab.on { background: #fff; color: #4A6B3D; border-color: #c9c9c9; }
 
-.shop-panel { background: #fff; margin: 0 12px 14px; border-radius: 0 0 16px 16px; padding: 12px 10px 16px; border: 2px solid #c9c9c9; border-top: none; }
+.shop-panel { background: #fff; margin: 0 10px 14px; border-radius: 0 0 16px 16px; padding: 12px 8px 16px; border: 2px solid #c9c9c9; border-top: none; }
 .panel-tip { font-size: 13px; color: #8a8a8a; line-height: 1.5; margin: 2px 4px 12px; padding: 8px 10px; background: #f5f8f2; border-radius: 10px; }
 
 /* 军衔装束：皮肤卡片网格 */
-.skin-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 4px; }
-.skin-card { background: #f7faf4; border: 2px solid #e3ecdc; border-radius: 16px; padding: 12px; text-align: center; }
+.skin-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 2px; }
+.skin-card { background: #f7faf4; border: 2px solid #e3ecdc; border-radius: 16px; padding: 12px; text-align: center; min-width: 0; overflow: hidden; }
 .skin-card.owned { border-color: #cdddbd; }
 .skin-card.equipped { border-color: #E98BA0; box-shadow: 0 0 0 3px rgba(233,139,160,0.25); }
-.skin-img { width: 100%; height: 210px; border-radius: 12px; overflow: hidden; background: linear-gradient(180deg,#EAF6FD,#D6EAF8); display: flex; align-items: flex-end; justify-content: center; }
-.skin-img img { max-height: 100%; width: auto; object-fit: contain; }
+.skin-img { width: 100%; height: 180px; border-radius: 12px; overflow: hidden; background: linear-gradient(180deg,#EAF6FD,#D6EAF8); display: flex; align-items: flex-end; justify-content: center; }
+.skin-img img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
 .skin-name { font-size: 17px; font-weight: bold; color: #4A6B3D; margin-top: 8px; }
 .skin-rank { font-size: 12px; color: #999; margin: 2px 0 8px; }
 .shop-buy.locked { background: #c9c9c9; color: #f3f3f3; cursor: not-allowed; box-shadow: none; }
 
 /* 军事装备库：收藏柜网格 */
-.coll-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 4px; }
-.coll-item { background: #f3f3f3; border: 2px solid #e0e0e0; border-radius: 14px; padding: 12px 8px; text-align: center; }
+.coll-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 2px; }
+.coll-item { background: #f3f3f3; border: 2px solid #e0e0e0; border-radius: 14px; padding: 12px 8px; text-align: center; min-width: 0; }
 .coll-item.locked { filter: grayscale(1); opacity: 0.7; }
 .coll-item.owned { background: #fff7ec; border-color: #f0c060; }
 .coll-icon { font-size: 34px; }
