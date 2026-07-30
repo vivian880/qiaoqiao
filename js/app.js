@@ -21,10 +21,10 @@
     '· 当日全部任务通关 额外 <b>+10</b> 子弹<br>' +
     '· 每日首次点击樱桃 <b>+2</b> 子弹<br>' +
     '· 连续 5 天完成基础任务 一次性 <b>+50</b> 子弹<br><br>' +
-    '🍖 <b>战备口粮</b>：消耗品，可反复兑换，兑换后樱桃饱腹值即时增加（每日重置为 0%）。<br>' +
-    '🎖️ <b>军衔装束</b>：需达到对应军衔 + 消耗子弹，穿新自动脱旧；未达军衔显示「🔒 晋升XX后解锁」。<br>' +
-    '🎒 <b>装备宝库</b>：配件按部位叠加穿戴，每个部位只能穿一件，已拥有显示「✅已拥有」，已穿戴显示「✅已穿戴」。<br>' +
-    '🏠 <b>军事装备库</b>：武器兑换后陈列收藏，不穿戴到角色身上，按价格从低到高排列。<br>' +
+    '🍖 <b>战备粮</b>：消耗品，可反复兑换，兑换后樱桃饱腹值即时增加（每日重置为 0%）。<br>' +
+    '🎖️ <b>军装库</b>：需达到对应军衔 + 消耗子弹，穿新自动脱旧；未达军衔显示「🔒 晋升XX后解锁」。<br>' +
+    '🎒 <b>装备库</b>：配件按部位叠加穿戴，每个部位只能穿一件，已拥有显示「✅已拥有」，已穿戴显示「✅已穿戴」。<br>' +
+    '🏠 <b>军备库</b>：武器兑换后陈列收藏，不穿戴到角色身上，按价格从低到高排列。<br>' +
     '⚠️ 子弹不够时按钮会变灰，去做任务赚子弹吧！'
 
   const app = document.getElementById('app')
@@ -115,7 +115,7 @@
   function wornNames(u) {
     const eq = Store.getEquips()
     const ids = eq.filter(e => u.equippedItems && u.equippedItems[e.id]).map(e => e.id)
-    if (!ids.length) return '<span class="worn-none">还没有穿戴装备，去装备宝库看看吧</span>'
+    if (!ids.length) return '<span class="worn-none">还没有穿戴装备，去装备库看看吧</span>'
     return ids.map(id => {
       const it = eq.find(e => e.id === id)
       return it ? `<span class="worn-chip">${it.icon} ${it.name} ✔</span>` : ''
@@ -382,10 +382,10 @@
     const u = Store.getUser()
     const rk = Store.getRankInfo()
     const tabs = [
-      { key: 'feed', name: '🍖 战备口粮' },
-      { key: 'skin', name: '🎖️ 军衔装束' },
-      { key: 'equip', name: '🎒 装备宝库' },
-      { key: 'weapon', name: '🏠 军事装备库' }
+      { key: 'feed', name: '🍖 战备粮' },
+      { key: 'skin', name: '🎖️ 军装库' },
+      { key: 'equip', name: '🎒 装备库' },
+      { key: 'weapon', name: '🏠 军备库' }
     ]
     let html = `<div class="shop-head">
       <div class="quiz-back" data-action="go-home">← 营地</div>
@@ -423,7 +423,7 @@
   }
 
   function renderSkins(u) {
-    let h = `<div class="shop-panel"><div class="panel-tip">🎖️ 邱少云军衔装束：达成对应军衔 + 消耗子弹即可购买穿戴，穿新自动脱旧。默认「新兵装束」初始拥有。</div><div class="skin-grid">`
+    let h = `<div class="shop-panel"><div class="panel-tip">🎖️ 邱少云军装库：达成对应军衔 + 消耗子弹即可购买穿戴，穿新自动脱旧。默认「新兵装束」初始拥有。</div><div class="skin-grid">`
     Store.getSkins().forEach(it => {
       const unlocked = Store.skinUnlocked(it)
       const worn = u.currentSkin === it.id
@@ -469,7 +469,7 @@
   }
 
   function renderWeapons(u) {
-    let h = `<div class="shop-panel"><div class="panel-tip">🏠 军事装备库：兑换后陈列收藏，不穿戴到角色身上。按价格从低到高排列。</div><div class="coll-grid">`
+    let h = `<div class="shop-panel"><div class="panel-tip">🏠 军备库：兑换后陈列收藏，不穿戴到角色身上。按价格从低到高排列。</div><div class="coll-grid">`
     Store.getWeapons().slice().sort((a, b) => a.price - b.price).forEach(it => {
       const owned = Store.ownsWeapon(it.id)
       const afford = u.totalScore >= it.price
