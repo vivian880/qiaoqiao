@@ -75,24 +75,24 @@ body {
 
 /* 角色场景：淡蓝清爽背景 + 邱少云与樱桃双角色同框 */
 .scene-wrap {
-  position: relative; width: 100%; height: 300px; border-radius: 16px; overflow: hidden;
+  position: relative; width: 100%; height: 250px; border-radius: 16px; overflow: hidden;
   background: linear-gradient(180deg, #EAF6FD 0%, #D6EAF8 100%);
 }
 .scene-stage { position: absolute; inset: 0; z-index: 2;
-  display: flex; align-items: flex-end; justify-content: center; gap: 0; padding: 0 4% 0; }
-/* 角色统一按"高度"占满场景放大，同时限制最大宽度防重叠；无论皮肤图是方是长都完整显示 */
-.scene-char { position: relative; display: flex; align-items: flex-end; flex: 0 0 auto; }
-/* 角色内层：基础形象 + 穿戴道具叠加，一起做动画；高度=父元素高度，图片直接 height:100% 占满 */
-.char-inner { position: relative; height: 100%; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
-.char-inner .char-base { position: relative; z-index: 1; display: block; height: 100%; width: auto; max-width: 100%; object-fit: contain; }
+  display: flex; align-items: flex-end; justify-content: center; gap: 0.5%; padding: 0 2% 3%; }
+/* 角色统一按"高度"约束缩放：无论皮肤图画布多大，视觉大小都和默认形象一致，绝不超出场景框 */
+.scene-char { position: relative; display: block; flex: 0 0 auto; }
+/* 角色内层：基础形象 + 穿戴道具叠加，一起做动画；宽度收缩至图片实际宽度，保证道具百分比坐标准确 */
+.char-inner { position: relative; height: 100%; width: fit-content; margin: 0 auto; }
+.char-inner .char-base { position: relative; z-index: 1; display: block; height: 100%; width: auto; max-width: none; }
 .scene-ov { position: absolute; pointer-events: none; }
-.scene-ov img { display: block; height: 100%; width: auto; max-width: 100%; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,.18)); }
+.scene-ov img { display: block; width: 100%; height: auto; filter: drop-shadow(0 2px 3px rgba(0,0,0,.18)); }
 .scene-ov.behind { z-index: 0; }
 .scene-ov.front { z-index: 2; }
-/* 邱少云：左侧主体，高度占场景 92%，最大宽度不超 62% */
-.qiao-char { height: 92%; width: auto; max-width: 62%; }
-/* 樱桃：右侧脚边，高度占场景 76%，最大宽度不超 44%；自然挨近人物 */
-.cherry-char { height: 76%; width: auto; max-width: 44%; position: relative; }
+/* 邱少云：左侧主体，高度占展示区 84% */
+.qiao-char { height: 84%; }
+/* 樱桃：邱少云右侧脚边，稍微矮一点，高度占 64% */
+.cherry-char { height: 64%; position: relative; }
 /* 点击樱桃时的开心弹跳反馈 */
 .cherry-char.eating .char-inner { animation: cherryPop .45s ease-in-out 6; }
 @keyframes cherryPop {
@@ -330,10 +330,15 @@ ruby rt { font-size: 11px; color: #999; }
   .scope-grid { grid-template-columns: 1fr; }
   .scope-card { padding: 14px; gap: 8px; }
   .scope-card .sc-num { font-size: 28px; }
-  /* 手机端：高度占满放大角色，同时限制最大宽度防重叠 */
-  .scene-wrap { height: 320px; height: 50dvh; }
-  .qiao-char { height: 94%; width: auto; max-width: 64%; }
-  .cherry-char { height: 78%; width: auto; max-width: 45%; }
+  /* 手机端：高度驱动放大角色——先给容器确定百分比高度，img 再 100% 填满，避免百分比相对无高度父级失效被原图撑爆 */
+  .scene-wrap { height: 320px; }
+  .scene-stage { padding: 0 3% 3%; }
+  .qiao-char { position: absolute; left: -3%; bottom: 3%; height: 80%; flex: none; max-width: none; }
+  .qiao-char .char-inner { height: 100%; }
+  .qiao-char .char-base { height: 100%; width: auto; max-width: none; }
+  .cherry-char { position: absolute; right: 0; bottom: 3%; height: 64%; flex: none; max-width: none; }
+  .cherry-char .char-inner { height: 100%; }
+  .cherry-char .char-base { height: 100%; width: auto; max-width: none; }
 }
 
 /* 可视化筛选 · 出题范围 */
