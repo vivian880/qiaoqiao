@@ -21,7 +21,7 @@
     '· 当日全部任务通关 额外 <b>+10</b> 子弹<br>' +
     '· 每日首次点击樱桃 <b>+2</b> 子弹<br>' +
     '· 连续 5 天完成基础任务 一次性 <b>+50</b> 子弹<br><br>' +
-    '🍖 <b>战备粮</b>：消耗品，可反复兑换，兑换后樱桃饱腹值即时增加（每日重置为 0%）。<br>' +
+    '🍖 <b>战备粮</b>：消耗品，可反复兑换，兑换后樱桃饱腹值即时增加（每日重置为 0%）。闯关最多只饱 80%，剩余要靠喂口粮补满 100%。<br>' +
     '🎖️ <b>军装库</b>：需达到对应军衔 + 消耗子弹，穿新自动脱旧；未达军衔显示「🔒 晋升XX后解锁」。<br>' +
     '🎒 <b>装备库</b>：配件按部位叠加穿戴，每个部位只能穿一件，已拥有显示「✅已拥有」，已穿戴显示「✅已穿戴」。<br>' +
     '🏠 <b>军备库</b>：武器兑换后陈列收藏，不穿戴到角色身上，按价格从低到高排列。<br>' +
@@ -406,7 +406,7 @@
   }
 
   function renderFoods(u) {
-    let h = `<div class="shop-panel"><div class="panel-tip">🍖 喂饱警犬樱桃的口粮，兑换后饱腹值即时增加（每日重置为 0%）</div><div class="shop-grid">`
+    let h = `<div class="shop-panel"><div class="panel-tip">🍖 喂饱警犬樱桃的口粮，兑换后饱腹值即时增加（每日重置为 0%）。闯关最多饱 80%，喂口粮才能补满 100%</div><div class="shop-grid">`
     Store.getFoods().forEach(it => {
       const afford = u.totalScore >= it.price
       const btn = afford

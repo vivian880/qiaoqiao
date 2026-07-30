@@ -183,7 +183,8 @@ window.Store = (function () {
     // 基础任务 +8，突击挑战（侦察连·阅读）+10
     const bullets = isAssault(key) ? 10 : 8
     user.totalScore += bullets
-    user.cherryFullness = Math.min(100, user.cherryFullness + 25)
+    // 闯关只管饱腹的前 80%：仅当未达 80% 时累加，封顶 80%（绝不把已喂食喂饱的拉回）；剩余 20% 必须由喂狗粮补满
+    if (user.cherryFullness < 80) user.cherryFullness = Math.min(80, user.cherryFullness + 25)
     let bonus = 0, allDone = false, streakBonus = 0
     // 当日基础任务 + 突击挑战全部通关 → 额外 +10
     if (keys.every(k => user.dailyTasks[k])) {
