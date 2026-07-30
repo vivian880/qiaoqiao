@@ -7,10 +7,10 @@ window.Store = (function () {
   // ===== 营地物资站（重构：四大板块）=====
   // 板块一：战备口粮（消耗品，兑换后樱桃饱腹即时增加，每日重置为 0%）
   const FOODS = [
-    { id: 'dogfood', name: '狗粮', icon: '🦴', img: 'img/items/dog_food.png', effect: '饱腹 +20%', price: 10, full: 20 },
-    { id: 'bone', name: '磨牙棒', icon: '🦴', img: 'img/items/bone.png', effect: '饱腹 +30%', price: 15, full: 30 },
-    { id: 'can', name: '肉罐头', icon: '🥫', img: 'img/items/can.png', effect: '饱腹 +50%', price: 20, full: 50 },
-    { id: 'milk', name: '狗狗牛奶', icon: '🥛', img: 'img/items/milk.png', effect: '饱腹 +40%', price: 20, full: 40 }
+    { id: 'dogfood', name: '狗粮', icon: '🦴', img: 'img/items/dog_food.png', effect: '饱腹 +10%', price: 10, full: 10 },
+    { id: 'bone', name: '磨牙棒', icon: '🦴', img: 'img/items/bone.png', effect: '饱腹 +15%', price: 15, full: 15 },
+    { id: 'can', name: '肉罐头', icon: '🥫', img: 'img/items/can.png', effect: '饱腹 +25%', price: 20, full: 25 },
+    { id: 'milk', name: '狗狗牛奶', icon: '🥛', img: 'img/items/milk.png', effect: '饱腹 +30%', price: 20, full: 30 }
   ]
   // 板块二：军衔装束（邱少云皮肤），需达到对应军衔 + 消耗子弹
   const SKINS = [
