@@ -98,8 +98,8 @@ window.Store = (function () {
     const d = getWeekday()
     const wk = getWeekNumber()
     let keys
-    if (d === 0) keys = ['scout', 'artillery', 'intel_words', 'rifle']
-    else if (d === 6) keys = ['scout', 'artillery', 'intel_words', 'rifle', 'logistics']
+    if (d === 0) keys = ['scout', 'artillery', 'intel_words', 'rifle', 'intel_special']
+    else if (d === 6) keys = ['scout', 'artillery', 'intel_words', 'rifle', 'logistics', 'intel_special']
     else keys = ['artillery', 'intel_words', 'intel_special', 'rifle', 'logistics']
     if (wk < 13) keys = keys.filter(k => k !== 'logistics')
     return keys

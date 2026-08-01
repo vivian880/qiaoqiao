@@ -357,7 +357,7 @@
 
   // ---------- 情报处·语文特训 ----------
   // 规则（用户定）：每天 10 字认读 + 专项 10 题（共 20 题）
-  //   周一同音字 / 周二多音字 / 周三前后鼻音 / 周四形近字 / 周五混合挑战(含平翘舌) / 周末大满贯（混合，周六日）
+  //   周一同音字 / 周二多音字 / 周三前后鼻音 / 周四形近字 / 周五平翘舌 / 周末大满贯（混合，周六日）
   // 轮换机制：每个题库维护「打乱顺序 + 指针」，每天从指针处取题不重复；
   //   整库出完一轮后自动重新打乱，从头再来。状态存 localStorage。
   const RKEY = 'qiaoqiao_rotation_v1'
@@ -415,7 +415,7 @@
     return draw(key, lib.length, n).map(i => zhuantiQuestion(lib[i], kind))
   }
   function mixedZhuanti(n) {
-    // 周五混合挑战：同音2 + 多音2 + 前后鼻2 + 形近2 + 平翘舌2（n=10）
+    // 周末混合挑战(周六/日)：同音2 + 多音2 + 前后鼻2 + 形近2 + 平翘舌2（n=10）
     return shuffle(
       zhuantiDraw(window.TongYinZi, 'mix_ty', 2, 'ty')
         .concat(zhuantiDraw(window.DuoYinZi, 'mix_dy', 2, 'dy'))
@@ -462,7 +462,7 @@
   }
 
   // ---------- 任务B：情报处·语文专项（周一至周五，周末无） ----------
-  // 周一同音字 / 周二多音字 / 周三前后鼻音 / 周四形近字 / 周五混合挑战(含平翘舌)，
+  // 周一同音字 / 周二多音字 / 周三前后鼻音 / 周四形近字 / 周五平翘舌 / 周末混合（周六日），
   // 每天 10 题三选一，全对通关；题库走轮换池（整库出完自动重洗）。
   function genIntelSpecial(rank, opts) {
     opts = opts || {}
@@ -472,7 +472,8 @@
     else if (wd === 2) { qs = zhuantiDraw(window.DuoYinZi, 'zt_dy', 10, 'dy'); mode = '多音字 10 题' }
     else if (wd === 3) { qs = zhuantiDraw(window.HunYin, 'zt_hb', 10, 'hb'); mode = '前后鼻音 10 题' }
     else if (wd === 4) { qs = zhuantiDraw(window.XingJinZi, 'zt_xj', 10, 'xj'); mode = '形近字 10 题' }
-    else { qs = mixedZhuanti(10); mode = '混合挑战 10 题' } // 周五（周末该任务不出现，兜底也给混合）
+    else if (wd === 5) { qs = zhuantiDraw(window.PingQiaoShe, 'zt_pq', 10, 'pq'); mode = '平翘舌 10 题' }
+    else { qs = mixedZhuanti(10); mode = '混合挑战 10 题' } // 周末(周六/日)出混合；兜底也给混合
     return { questions: qs, mode }
   }
 
