@@ -104,7 +104,7 @@ body {
 
 /* 吃东西时的“谢谢主人”气泡 + 飘心 */
 .cherry-thanks {
-  position: absolute; left: 50%; top: -4%;
+  position: absolute; left: 50%; top: -18%;
   transform: translateX(-50%);
   background: #fff7fb; color: #d6336c; font-weight: 700; font-size: 14px;
   padding: 4px 10px; border-radius: 14px; border: 2px solid #ffd6e7;
@@ -359,9 +359,9 @@ ruby rt { font-size: 11px; color: #999; }
 
 /* toast */
 .toast {
-  position: fixed; left: 50%; top: 40%; transform: translate(-50%, -50%) scale(0.8);
-  background: rgba(0,0,0,0.82); color: #fff; padding: 14px 22px; border-radius: 14px;
-  font-size: 18px; font-weight: bold; opacity: 0; transition: all .25s; z-index: 99; text-align: center;
+  position: fixed; left: 50%; top: 12%; transform: translate(-50%, -50%) scale(0.8);
+  max-width: min(90vw, 520px); background: rgba(0,0,0,0.82); color: #fff; padding: 14px 22px; border-radius: 14px;
+  font-size: 18px; font-weight: bold; opacity: 0; transition: all .25s; z-index: 99; text-align: center; line-height: 1.4;
 }
 .toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 

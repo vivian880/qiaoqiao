@@ -361,6 +361,11 @@
       const res = Store.recordPass(q.key)
       bonus = res.bonus; allDone = res.allDone; streakBonus = res.streakBonus || 0
       earned = res.bullets + bonus + streakBonus
+      // 识字连通关后自动推进到下一课（跨单元连续），家长后台仍可手动覆盖
+      if (q.key === 'intel_words') {
+        const nx = Store.advanceLesson()
+        if (nx) setTimeout(() => toast('📖 已自动进入 第' + nx.unit + '单元·第' + nx.lesson + '课《' + (nx.lessonName || '') + '》'), 1300)
+      }
     }
     Store.addHistory({ date: Store.todayStr(), type: q.key, total: q.total, correct: q.correctCount, passed, bullets: earned })
     if (passed && !q.review) {
@@ -767,10 +772,10 @@
           }
           const add = Store.clickCherry()
           if (add) {
-            toast('樱桃开心地吃起来啦 🦴 谢谢主人！子弹 +' + add)
+            toast('主人，记得找我玩哦！ 子弹 +' + add)
             setTimeout(() => renderHome(), 4800) // 动画结束后再刷新，更新子弹数
           } else {
-            toast('樱桃蹭了蹭你 🐾 谢谢主人~')
+            toast('樱桃蹭了蹭你 🐾')
             setTimeout(() => { const w = document.querySelector('.cherry-char'); if (w) w.classList.remove('eating') }, 4800)
           }
           break

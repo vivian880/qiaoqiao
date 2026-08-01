@@ -259,7 +259,7 @@ window.Store = (function () {
     user.totalScore -= f.price
     user.cherryFullness = Math.min(100, (user.cherryFullness || 0) + f.full)
     save()
-    return { ok: true, kind: 'food', msg: '樱桃大口吃起来啦 🦴 谢谢主人！饱腹 +' + f.full + '%' }
+    return { ok: true, kind: 'food', msg: '樱桃大口吃起来啦 🦴 饱腹 +' + f.full + '%' }
   }
   // 板块二：军衔装束（皮肤）
   function buySkin(s) {
@@ -337,6 +337,22 @@ window.Store = (function () {
   function setCurrentUnit(n) { user.currentUnit = Math.max(1, Math.min(8, n | 0)); save() }
   function getCurrentLesson() { return user.currentLesson || '1' }
   function setCurrentLesson(l) { user.currentLesson = (typeof l === 'string' && l) ? l : '1'; save() }
+  // 识字连通关后自动把"当前课文"推进到 LESSON_ORDER 中的下一课（跨单元连续）；
+  // 已是最后一课（全部学完）或当前课异常时返回 null 不推进。
+  function advanceLesson() {
+    const W = window.WORDS
+    if (!W || !W.getLessonOrder) return null
+    const order = W.getLessonOrder()
+    if (!order || !order.length) return null
+    const cu = getCurrentUnit(), cl = String(getCurrentLesson())
+    const idx = order.findIndex(x => x.unit === cu && String(x.lesson) === cl)
+    if (idx < 0 || idx >= order.length - 1) return null
+    const next = order[idx + 1]
+    user.currentUnit = next.unit
+    user.currentLesson = String(next.lesson)
+    save()
+    return next
+  }
   function setActiveUnits(arr) { user.activeUnits = arr; save() }
 
   // ---- 家长导入生字（持久化在 user.importedWords，随进度门控参与出题） ----
@@ -416,7 +432,7 @@ window.Store = (function () {
     getFoods, getSkins, getEquips, getWeapons,
     buyItem, buyFood, buySkin, buyEquip, buyWeapon, toggleEquip,
     skinUnlocked, ownsSkin, setSkin, ownsEquip, isEquipOn, ownsWeapon,
-    checkAdminPassword, setAdminPassword, getActiveUnits, setActiveUnits, getCurrentUnit, setCurrentUnit, getCurrentLesson, setCurrentLesson,
+    checkAdminPassword, setAdminPassword, getActiveUnits, setActiveUnits, getCurrentUnit, setCurrentUnit, getCurrentLesson, setCurrentLesson, advanceLesson,
     getImportedWords, addImportedWord, clearImportedWords,
     getArticles, saveArticle, deleteArticle,
     addHistory, getReport, stageName,
