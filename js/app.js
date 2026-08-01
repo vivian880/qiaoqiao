@@ -251,7 +251,7 @@
       key, meta: TASKS[key], questions, article: gen.article, mode: gen.mode,
       total, normalTotal, cur: 0, selected: -1, answered: false, correctCount: 0,
       readingTotal: gen.readingTotal || 0, readingCorrect: 0, reviewCount,
-      wrongSel: -1, wrongLogged: false,
+      wrongSel: -1, wrongLogged: false, attempts: 0, finalWrong: false,
       phase: gen.article ? 'article' : 'quiz', review, wrongList: [], allDone: false
     }
     renderQuiz()
@@ -335,9 +335,11 @@
     html += `</div>`
     if (q.answered) {
       const ok = q.selected === item.answer
-      html += `<div class="fb ${ok ? 'fb-ok' : 'fb-no'}">${ok ? '✅ 答对了！' : '❌ 再想想哦！'}</div>`
+      if (ok) html += `<div class="fb fb-ok">✅ 答对了！</div>`
+      else if (q.finalWrong) html += `<div class="fb fb-no">❌ 正确答案：${rubyfy(esc(item.options[item.answer]))}</div>`
+      else html += `<div class="fb fb-no">❌ 再想想哦！</div>`
     } else if (q.wrongSel >= 0) {
-      html += `<div class="fb fb-no">❌ 答错了，再试一次！</div>`
+      html += `<div class="fb fb-no">❌ 答错了，还有 1 次机会！</div>`
     }
     app.innerHTML = html
   }
@@ -357,21 +359,30 @@
       renderQuiz()
       setTimeout(advance, 750)
     } else {
-      // 答错 → 给予重新回答机会（不限次，直到答对），并记入错题库
+      // 答错 → 仅给 1 次重试机会（每题共 2 次）；第 2 次仍错则锁定为错、展示正确答案后进入下一题
+      q.attempts = (q.attempts || 0) + 1
       q.wrongSel = i
       if (!q.wrongLogged) {
         Store.addWrong({ task: q.key, text: item.text, options: item.options.slice(), answer: item.answer })
         q.wrongList.push({ text: item.text, your: item.options[i], correct: item.options[item.answer] })
         q.wrongLogged = true
       }
-      renderQuiz()
+      if (q.attempts >= 2) {
+        q.finalWrong = true
+        q.answered = true      // 锁定（未答对）
+        q.selected = -1
+        renderQuiz()
+        setTimeout(advance, 1200)
+      } else {
+        renderQuiz()
+      }
     }
   }
   function advance() {
     const q = state.quiz
     if (!q) return
     if (q.cur < q.total - 1) {
-      q.cur++; q.answered = false; q.selected = -1; q.wrongSel = -1; q.wrongLogged = false
+      q.cur++; q.answered = false; q.selected = -1; q.wrongSel = -1; q.wrongLogged = false; q.attempts = 0; q.finalWrong = false
       renderQuiz()
     } else finishQuiz()
   }
