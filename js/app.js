@@ -853,10 +853,21 @@
         case 'buy-equip': {
           const r = Store.buyItem(d.id)
           if (!r.ok) { toast(r.msg); break }
-          // 装备是邱少云自己的事，只由他说台词；狗不插嘴（谢谢主人仅喂食物时触发）
-          const eq = Store.getEquips().find(x => x.id === d.id)
-          toast('🫡 邱少云：换上「' + (eq ? eq.name : '') + '」，整装待发！点装备即可穿戴')
-          renderShop()
+          const it = Store.getEquips().find(x => x.id === d.id)
+          if (it && it.who === 'cherry') {
+            // 买给樱桃的装备：樱桃自己互动（吃 + 谢谢主人），邱少云不插嘴
+            toast(r.msg)
+            renderShop()
+            const dog = document.querySelector('.shop-scene .cherry-char')
+            if (dog) {
+              dog.classList.remove('eating'); void dog.offsetWidth; dog.classList.add('eating')
+              setTimeout(() => { const d2 = document.querySelector('.shop-scene .cherry-char'); if (d2) d2.classList.remove('eating') }, 4800)
+            }
+          } else {
+            // 买给邱少云的装备：邱少云本人说话，狗不插嘴
+            toast('🫡 邱少云：换上「' + (it ? it.name : '') + '」，整装待发！点装备即可穿戴')
+            renderShop()
+          }
           break
         }
         case 'toggle-equip': { if (Store.toggleEquip(d.id)) toast('已更新穿戴'); renderShop(); break }
