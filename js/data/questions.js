@@ -398,16 +398,22 @@
   }
 
   // ---------- 语文专项题库（js/data/zhuanti.js：标准三选一格式） ----------
-  // 数据项 {id,char,options[3],answer}（多音字额外含 targetPinyin）。
+  // 数据项 {id,char,options[3],answer}（多音字另含 word 字段；options 为拼音三选一）。
   // 出题时把选项重新打乱，避免正确答案位置固定。
   function zhuantiQuestion(item, kind) {
     const correct = item.options[item.answer]
     const opts = shuffle(item.options.slice())
-    let text
-    if (kind === 'dy') text = `「${item.char}」读「${item.targetPinyin}」时，可以组成下面哪个词？`
-    else if (kind === 'pq') text = `「${item.char}」的正确读音是？注意平舌音(z/c/s)与翘舌音(zh/ch/sh)`
-    else text = `「${item.char}」的正确读音是？`
-    return { text, options: opts, answer: opts.indexOf(correct) }
+    let text, note = ''
+    if (kind === 'dy') {
+      // 多音字：给出词语，问句中这个字读什么音（不再直接给读音）
+      text = `「${item.char}」在「${item.word}」里读什么音？`
+    } else if (kind === 'pq') {
+      text = `「${item.char}」的正确读音是？`
+      note = '注意 平舌音(z/c/s) 与 翘舌音(zh/ch/sh)'
+    } else {
+      text = `「${item.char}」的正确读音是？`
+    }
+    return { text, options: opts, answer: opts.indexOf(correct), char: item.char, word: item.word || null, note }
   }
   // 从某个专项集合走轮换池抽 n 题
   function zhuantiDraw(lib, key, n, kind) {

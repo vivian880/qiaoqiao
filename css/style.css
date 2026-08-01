@@ -253,6 +253,9 @@ ruby { ruby-position: over; }
 ruby rt { font-size: 11px; color: #999; }
 
 .q-text { color: #fff; font-size: 22px; font-weight: bold; text-align: center; padding: 22px 18px; line-height: 1.5; }
+/* 专项题：题干中的“字”高亮醒目 */
+.q-char { display: inline-block; color: #ffe06a; font-size: 30px; font-weight: 900; padding: 0 7px; margin: 0 2px; border-radius: 9px; background: rgba(255,255,255,.16); text-shadow: 0 2px 6px rgba(0,0,0,.35); vertical-align: middle; }
+.q-note { display: block; margin-top: 10px; color: #9fe0ff; font-size: 15px; font-weight: normal; letter-spacing: .5px; }
 /* 生字认读：单字放大、无符号，仅让小朋友选正确读音 */
 .q-char-big {
   color: #fff; font-size: 88px; font-weight: bold; text-align: center;
