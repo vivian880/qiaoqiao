@@ -13,6 +13,7 @@ const libs = {
   DuoYinZi: global.window.DuoYinZi,
   HunYin: global.window.HunYin,
   XingJinZi: global.window.XingJinZi,
+  PingQiaoShe: global.window.PingQiaoShe,
 }
 
 let problems = 0

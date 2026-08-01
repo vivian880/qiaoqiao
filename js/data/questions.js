@@ -357,7 +357,7 @@
 
   // ---------- 情报处·语文特训 ----------
   // 规则（用户定）：每天 10 字认读 + 专项 10 题（共 20 题）
-  //   周一同音字 / 周二多音字 / 周三前后鼻音 / 周四形近字 / 周五混合挑战 / 周末大满贯（混合，周六日）
+  //   周一同音字 / 周二多音字 / 周三前后鼻音 / 周四形近字 / 周五混合挑战(含平翘舌) / 周末大满贯（混合，周六日）
   // 轮换机制：每个题库维护「打乱顺序 + 指针」，每天从指针处取题不重复；
   //   整库出完一轮后自动重新打乱，从头再来。状态存 localStorage。
   const RKEY = 'qiaoqiao_rotation_v1'
@@ -405,6 +405,7 @@
     const opts = shuffle(item.options.slice())
     let text
     if (kind === 'dy') text = `「${item.char}」读「${item.targetPinyin}」时，可以组成下面哪个词？`
+    else if (kind === 'pq') text = `「${item.char}」的正确读音是？注意平舌音(z/c/s)与翘舌音(zh/ch/sh)`
     else text = `「${item.char}」的正确读音是？`
     return { text, options: opts, answer: opts.indexOf(correct) }
   }
@@ -414,13 +415,13 @@
     return draw(key, lib.length, n).map(i => zhuantiQuestion(lib[i], kind))
   }
   function mixedZhuanti(n) {
-    // 周五混合挑战：同音3 + 多音2 + 前后鼻3 + 形近2（n=10）
-    const a = 3, b = 2, c = 3, d = n - a - b - c
+    // 周五混合挑战：同音2 + 多音2 + 前后鼻2 + 形近2 + 平翘舌2（n=10）
     return shuffle(
-      zhuantiDraw(window.TongYinZi, 'mix_ty', a, 'ty')
-        .concat(zhuantiDraw(window.DuoYinZi, 'mix_dy', b, 'dy'))
-        .concat(zhuantiDraw(window.HunYin, 'mix_hb', c, 'hb'))
-        .concat(zhuantiDraw(window.XingJinZi, 'mix_xj', d, 'xj'))
+      zhuantiDraw(window.TongYinZi, 'mix_ty', 2, 'ty')
+        .concat(zhuantiDraw(window.DuoYinZi, 'mix_dy', 2, 'dy'))
+        .concat(zhuantiDraw(window.HunYin, 'mix_hb', 2, 'hb'))
+        .concat(zhuantiDraw(window.XingJinZi, 'mix_xj', 2, 'xj'))
+        .concat(zhuantiDraw(window.PingQiaoShe, 'mix_pq', 2, 'pq'))
     )
   }
 
@@ -461,7 +462,7 @@
   }
 
   // ---------- 任务B：情报处·语文专项（周一至周五，周末无） ----------
-  // 周一同音字 / 周二多音字 / 周三前后鼻音 / 周四形近字 / 周五混合挑战，
+  // 周一同音字 / 周二多音字 / 周三前后鼻音 / 周四形近字 / 周五混合挑战(含平翘舌)，
   // 每天 10 题三选一，全对通关；题库走轮换池（整库出完自动重洗）。
   function genIntelSpecial(rank, opts) {
     opts = opts || {}
