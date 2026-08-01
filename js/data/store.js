@@ -3,6 +3,8 @@ window.Store = (function () {
   const KEY = 'qiaoqiao_user_v2'
   const WKEY = 'qiaoqiao_words_v2'
   const AKEY = 'qiaoqiao_articles_v2'
+  // 本地数据结构版本：修改错题/题库格式后 bump，用于自动清空旧格式错题库
+  const DATA_VERSION = 3
 
   // ===== 营地物资站（重构：四大板块）=====
   // 板块一：战备口粮（消耗品，兑换后樱桃饱腹即时增加，每日重置为 0%）
@@ -62,6 +64,7 @@ window.Store = (function () {
       activeUnits: [],
       currentUnit: 1,
       currentLesson: '1',
+      dataVersion: DATA_VERSION,
       wrongBank: [],
       importedWords: [],
       history: []
@@ -114,6 +117,12 @@ window.Store = (function () {
     if (raw) {
       try { user = Object.assign(defaultUser(), JSON.parse(raw)) }
       catch (e) { user = defaultUser() }
+    }
+    // 数据结构升级：清空旧格式错题库，避免新旧格式混用导致题干/选项显示异常
+    if (user.dataVersion !== DATA_VERSION) {
+      user.wrongBank = []
+      user.dataVersion = DATA_VERSION
+      save()
     }
     // 旧版迁移：intel → intel_words / intel_special
     const dt = user.dailyTasks || {}, rc = user.retryCount || {}

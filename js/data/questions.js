@@ -406,12 +406,12 @@
     let text, note = ''
     if (kind === 'dy') {
       // 多音字：给出词语，问句中这个字读什么音（不再直接给读音）
-      text = `「${item.char}」在「${item.word}」里读什么音？`
+      text = item.word ? `${item.char} 在 ${item.word} 里读什么音？` : `${item.char} 怎么读？`
     } else if (kind === 'pq') {
-      text = `「${item.char}」的正确读音是？`
+      text = `${item.char} 的正确读音是？`
       note = '注意 平舌音(z/c/s) 与 翘舌音(zh/ch/sh)'
     } else {
-      text = `「${item.char}」的正确读音是？`
+      text = `${item.char} 的正确读音是？`
     }
     return { text, options: opts, answer: opts.indexOf(correct), char: item.char, word: item.word || null, note }
   }

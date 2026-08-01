@@ -326,8 +326,8 @@
         ? `<div class="q-char-big">${rubyfy(esc(item.text))}</div><div class="q-read-hint">请选出正确的读音</div>`
         : (item.char
             ? (item.word
-                ? `<div class="q-text">「<span class="q-char">${esc(item.char)}</span>」在「${esc(item.word)}」里读什么音？${item.note ? `<span class="q-note">${esc(item.note)}</span>` : ''}</div>`
-                : `<div class="q-text">「<span class="q-char">${esc(item.char)}</span>」的正确读音是？${item.note ? `<span class="q-note">${esc(item.note)}</span>` : ''}</div>`)
+                ? `<div class="q-text"><span class="q-char">${esc(item.char)}</span> 在 ${esc(item.word)} 里读什么音？${item.note ? `<span class="q-note">${esc(item.note)}</span>` : ''}</div>`
+                : `<div class="q-text"><span class="q-char">${esc(item.char)}</span> 的正确读音是？${item.note ? `<span class="q-note">${esc(item.note)}</span>` : ''}</div>`)
             : `<div class="q-text">${rubyfy(esc(item.text))}</div>`)}
       <div class="options">`
     item.options.forEach((o, i) => {
