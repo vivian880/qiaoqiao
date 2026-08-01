@@ -55,12 +55,22 @@
     return q.correctCount >= passFor(q.total)
   }
   function toast(msg) {
+    // 多条 toast 用统一容器纵向堆叠，避免快速连发时互相重叠遮挡
+    let stack = document.querySelector('.toast-stack')
+    if (!stack) {
+      stack = document.createElement('div')
+      stack.className = 'toast-stack'
+      document.body.appendChild(stack)
+    }
     const t = document.createElement('div')
     t.className = 'toast'
     t.textContent = msg
-    document.body.appendChild(t)
+    stack.appendChild(t)
     setTimeout(() => t.classList.add('show'), 10)
-    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300) }, 1600)
+    setTimeout(() => {
+      t.classList.remove('show')
+      setTimeout(() => { t.remove(); if (!stack.children.length) stack.remove() }, 300)
+    }, 1600)
   }
 
   // ---------- 形象场景 ----------
@@ -415,9 +425,12 @@
     let h = `<div class="shop-panel"><div class="panel-tip">🍖 喂饱警犬樱桃的口粮，兑换后饱腹值即时增加（每日重置为 0%）。闯关最多饱 80%，喂口粮才能补满 100%</div><div class="shop-grid">`
     Store.getFoods().forEach(it => {
       const afford = u.totalScore >= it.price
-      const btn = afford
-        ? `<div class="shop-buy" data-action="buy" data-id="${it.id}">兑换 🔸${it.price}</div>`
-        : `<div class="shop-buy disabled" data-action="buy-poor">${it.price}🔸</div>`
+      const full = u.cherryFullness >= 100
+      const btn = full
+        ? `<div class="shop-buy fed" data-action="buy" data-id="${it.id}">💯 已吃饱</div>`
+        : afford
+          ? `<div class="shop-buy" data-action="buy" data-id="${it.id}">兑换 🔸${it.price}</div>`
+          : `<div class="shop-buy disabled" data-action="buy-poor">${it.price}🔸</div>`
       h += `<div class="shop-item">
         <div class="shop-icon"><img src="${it.img}" alt="${it.name}" onerror="this.onerror=null;this.outerHTML='${it.icon}'"></div>
         <div class="shop-name">${it.name}</div>
