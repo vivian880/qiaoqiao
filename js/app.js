@@ -853,32 +853,20 @@
         case 'buy-equip': {
           const r = Store.buyItem(d.id)
           if (!r.ok) { toast(r.msg); break }
-          // 邱少云本人台词（狗的"谢谢主人"仍由吃东西气泡视觉呈现）
+          // 装备是邱少云自己的事，只由他说台词；狗不插嘴（谢谢主人仅喂食物时触发）
           const eq = Store.getEquips().find(x => x.id === d.id)
           toast('🫡 邱少云：换上「' + (eq ? eq.name : '') + '」，整装待发！点装备即可穿戴')
           renderShop()
-          // 买装备：樱桃开心吃东西 + 说谢谢主人（视觉气泡）
-          const dog = document.querySelector('.shop-scene .cherry-char')
-          if (dog) {
-            dog.classList.remove('eating'); void dog.offsetWidth; dog.classList.add('eating')
-            setTimeout(() => { const d2 = document.querySelector('.shop-scene .cherry-char'); if (d2) d2.classList.remove('eating') }, 4800)
-          }
           break
         }
         case 'toggle-equip': { if (Store.toggleEquip(d.id)) toast('已更新穿戴'); renderShop(); break }
         case 'buy-weapon': {
           const r = Store.buyItem(d.id)
           if (!r.ok) { toast(r.msg); break }
-          // 邱少云本人台词（狗的"谢谢主人"仍由吃东西气泡视觉呈现）
+          // 军备是邱少云自己的事，只由他说台词；狗不插嘴（谢谢主人仅喂食物时触发）
           const w = Store.getWeapons().find(x => x.id === d.id)
           toast('🫡 邱少云：收藏「' + (w ? w.name : '') + '」，军备入库！')
           renderShop()
-          // 买军备：樱桃开心吃东西 + 说谢谢主人（视觉气泡）
-          const dog = document.querySelector('.shop-scene .cherry-char')
-          if (dog) {
-            dog.classList.remove('eating'); void dog.offsetWidth; dog.classList.add('eating')
-            setTimeout(() => { const d2 = document.querySelector('.shop-scene .cherry-char'); if (d2) d2.classList.remove('eating') }, 4800)
-          }
           break
         }
         case 'buy-poor': toast('子弹不够，去做任务赚吧！'); break
