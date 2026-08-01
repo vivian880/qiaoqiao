@@ -423,6 +423,11 @@ ruby rt { font-size: 11px; color: #999; }
   font-size: 18px; font-weight: bold; opacity: 0; transition: all .25s; text-align: center; line-height: 1.4; transform: scale(0.8);
 }
 .toast.show { opacity: 1; transform: scale(1); }
+/* 升级军衔庆祝：金色高亮，更醒目 */
+.toast.rankup {
+  background: linear-gradient(135deg, #fff3c4, #ffe08a); color: #8a5a00;
+  border: 2px solid #ffce4d; font-size: 20px; box-shadow: 0 4px 16px rgba(255,190,60,.55);
+}
 
 /* 错题复习轮横幅 */
 .review-banner { background: #fff4e0; color: #a35a00; border: 2px dashed #f0b860; border-radius: 12px; padding: 10px 12px; margin: 8px 14px; font-size: 15px; font-weight: bold; text-align: center; }

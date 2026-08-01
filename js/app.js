@@ -28,7 +28,7 @@
     '⚠️ 子弹不够时按钮会变灰，去做任务赚子弹吧！'
 
   const app = document.getElementById('app')
-  let state = { view: 'home', quiz: null, shopTab: 'feed', admin: { tab: 'words', unit: 1, editArticle: -1, editWord: -1, importOpen: false, importUnit: 1 }, greetShown: false }
+  let state = { view: 'home', quiz: null, shopTab: 'feed', admin: { tab: 'words', unit: 1, editArticle: -1, editWord: -1, importOpen: false, importUnit: 1 }, greetShown: false, rankUpPending: null }
 
   // ---------- 工具 ----------
   function rubyfy(s) {
@@ -54,7 +54,7 @@
     if (q.key === 'intel_words') return q.readingCorrect === q.readingTotal
     return q.correctCount >= passFor(q.total)
   }
-  function toast(msg) {
+  function toast(msg, cls) {
     // 多条 toast 用统一容器纵向堆叠，避免快速连发时互相重叠遮挡
     let stack = document.querySelector('.toast-stack')
     if (!stack) {
@@ -63,14 +63,15 @@
       document.body.appendChild(stack)
     }
     const t = document.createElement('div')
-    t.className = 'toast'
+    t.className = 'toast' + (cls ? ' ' + cls : '')
     t.textContent = msg
     stack.appendChild(t)
+    const dur = cls === 'rankup' ? 2400 : 1600
     setTimeout(() => t.classList.add('show'), 10)
     setTimeout(() => {
       t.classList.remove('show')
       setTimeout(() => { t.remove(); if (!stack.children.length) stack.remove() }, 300)
-    }, 1600)
+    }, dur)
   }
 
   // ---------- 形象场景 ----------
@@ -185,6 +186,15 @@
       <div class="play-tip-entry" data-action="show-tip">💡 游玩小建议</div>
       <div class="foot-tip">学习数据存在本机浏览器 · 换设备不互通</div>
     `
+    // 升级军衔后返回营地：邱少云敬礼（台词 toast 已在结算时弹出）
+    if (state.rankUpPending) {
+      const qiao = document.querySelector('.qiao-char')
+      if (qiao) {
+        qiao.classList.remove('tap'); void qiao.offsetWidth; qiao.classList.add('tap')
+        setTimeout(() => { const q2 = document.querySelector('.qiao-char'); if (q2) q2.classList.remove('tap') }, 620)
+      }
+      state.rankUpPending = null
+    }
   }
 
   // 游玩小建议弹窗
@@ -369,9 +379,16 @@
     const passed = quizPassed(q)
     let bonus = 0, allDone = false, earned = 0, streakBonus = 0
     if (passed && !q.review) {
+      const oldRank = Store.getRankInfo().name
       const res = Store.recordPass(q.key)
       bonus = res.bonus; allDone = res.allDone; streakBonus = res.streakBonus || 0
       earned = res.bullets + bonus + streakBonus
+      // 军衔提升检测：升级时邱少云敬礼喊话（金色 toast），并返回营地后播放敬礼动画
+      const newRank = Store.getRankInfo().name
+      if (newRank !== oldRank) {
+        state.rankUpPending = newRank
+        setTimeout(() => toast('🫡 邱少云：报告首长！我已晋升为「' + newRank + '」！', 'rankup'), 1200)
+      }
       // 识字连通关后自动推进到下一课（跨单元连续），家长后台仍可手动覆盖
       if (q.key === 'intel_words') {
         const nx = Store.advanceLesson()
@@ -836,8 +853,11 @@
         case 'buy-equip': {
           const r = Store.buyItem(d.id)
           if (!r.ok) { toast(r.msg); break }
-          toast(r.msg); renderShop()
-          // 买装备：樱桃开心吃东西 + 说谢谢主人
+          // 邱少云本人台词（狗的"谢谢主人"仍由吃东西气泡视觉呈现）
+          const eq = Store.getEquips().find(x => x.id === d.id)
+          toast('🫡 邱少云：换上「' + (eq ? eq.name : '') + '」，整装待发！点装备即可穿戴')
+          renderShop()
+          // 买装备：樱桃开心吃东西 + 说谢谢主人（视觉气泡）
           const dog = document.querySelector('.shop-scene .cherry-char')
           if (dog) {
             dog.classList.remove('eating'); void dog.offsetWidth; dog.classList.add('eating')
@@ -849,8 +869,11 @@
         case 'buy-weapon': {
           const r = Store.buyItem(d.id)
           if (!r.ok) { toast(r.msg); break }
-          toast(r.msg); renderShop()
-          // 买军备：樱桃开心吃东西 + 说谢谢主人
+          // 邱少云本人台词（狗的"谢谢主人"仍由吃东西气泡视觉呈现）
+          const w = Store.getWeapons().find(x => x.id === d.id)
+          toast('🫡 邱少云：收藏「' + (w ? w.name : '') + '」，军备入库！')
+          renderShop()
+          // 买军备：樱桃开心吃东西 + 说谢谢主人（视觉气泡）
           const dog = document.querySelector('.shop-scene .cherry-char')
           if (dog) {
             dog.classList.remove('eating'); void dog.offsetWidth; dog.classList.add('eating')
