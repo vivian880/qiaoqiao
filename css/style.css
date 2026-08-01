@@ -146,10 +146,21 @@ body {
   animation: statusPop .42s cubic-bezier(.2,1.4,.5,1) both,
              statusFloat 2.8s ease-in-out infinite;
 }
-.cherry-status.full   { background: #e7f7ec; color: #1f9d55; border: 2px solid #b7e4c7; }
+.cherry-status.full   { background: #e7f7ec; color: #1f9d55; border: 2px solid #b7e4c7;
+  /* 满饱：在飘动基础上叠加开心的轻微缩放脉冲 */
+  animation: statusPop .42s cubic-bezier(.2,1.4,.5,1) both,
+             statusFloat 2.8s ease-in-out infinite,
+             happyPulse 1.8s ease-in-out infinite;
+}
 .cherry-status.hungry { background: #fff4e6; color: #d9480f; border: 2px solid #ffd8a8; }
 /* 吃东西（喂食物/买装备）时，状态气泡先让位给"谢谢主人"气泡 */
 .cherry-char.eating .cherry-status { visibility: hidden; }
+/* 满饱喂食反馈：樱桃开心摇尾 + 飘心（不弹谢谢主人） */
+@keyframes happyPulse { 0%,100% { scale: 1; } 50% { scale: 1.07; } }
+.cherry-char.happy .cherry-hearts span { animation: heartUp 1.8s ease-in infinite; }
+.cherry-char.happy .cherry-hearts span:nth-child(2) { animation-delay: .6s; left: -16px; }
+.cherry-char.happy .cherry-hearts span:nth-child(3) { animation-delay: 1.2s; left: 16px; }
+.cherry-char.happy .char-inner { animation: cherryPop .45s ease-in-out 2; }
 
 @keyframes statusPop {
   0%   { opacity: 0; scale: .6; }

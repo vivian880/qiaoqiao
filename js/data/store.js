@@ -255,6 +255,8 @@ window.Store = (function () {
   // 板块一：战备口粮（消耗品）
   function buyFood(f) {
     if (!f) return null
+    // 已满饱：不扣子弹、不弹假 +X%，直接提示已吃饱
+    if (user.cherryFullness >= 100) return { ok: true, kind: 'food-full', msg: '樱桃已经吃饱啦 🍖 不用再喂咯' }
     if (user.totalScore < f.price) return { ok: false, msg: '子弹不够，去做任务赚吧！' }
     user.totalScore -= f.price
     user.cherryFullness = Math.min(100, (user.cherryFullness || 0) + f.full)

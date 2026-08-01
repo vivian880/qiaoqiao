@@ -106,7 +106,7 @@
             </div>
             <div class="cherry-thanks">谢谢主人 😊</div>
             <div class="cherry-hearts"><span>💕</span><span>💕</span><span>💕</span></div>
-            <div class="cherry-status ${u.cherryFullness >= 100 ? 'full' : 'hungry'}">${u.cherryFullness >= 100 ? '🍖 饱了' : '主人，我饿了😭'}</div>
+            <div class="cherry-status ${u.cherryFullness >= 100 ? 'full' : 'hungry'}">${u.cherryFullness >= 100 ? '🍖 饱了 💕' : '主人，我饿了😭'}</div>
           </div>
         </div>
       </div>`
@@ -800,6 +800,16 @@
               void dog.offsetWidth
               dog.classList.add('eating')
               setTimeout(() => { const d2 = document.querySelector('.shop-scene .cherry-char'); if (d2) d2.classList.remove('eating') }, 4800)
+            }
+          } else if (r.kind === 'food-full') {
+            // 已满饱：不扣子弹、不弹谢谢主人，只给开心的轻盈反馈（摇尾+飘心）
+            renderShop()
+            const dog = document.querySelector('.shop-scene .cherry-char')
+            if (dog) {
+              dog.classList.remove('happy')
+              void dog.offsetWidth
+              dog.classList.add('happy')
+              setTimeout(() => { const d2 = document.querySelector('.shop-scene .cherry-char'); if (d2) d2.classList.remove('happy') }, 2600)
             }
           } else renderShop()
           break
