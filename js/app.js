@@ -106,6 +106,7 @@
             </div>
             <div class="cherry-thanks">谢谢主人 😊</div>
             <div class="cherry-hearts"><span>💕</span><span>💕</span><span>💕</span></div>
+            <div class="cherry-status ${u.cherryFullness >= 100 ? 'full' : 'hungry'}">${u.cherryFullness >= 100 ? '🍖 饱了' : '主人，我饿了😭'}</div>
           </div>
         </div>
       </div>`
@@ -827,7 +828,24 @@
         case 'buy-poor': toast('子弹不够，去做任务赚吧！'); break
         case 'show-tip': showPlayTip(); break
         case 'show-shoprules': showShopRules(); break
-        case 'shop-cherry': break
+        case 'shop-cherry': {
+          // 商店页点狗狗：和首页一致的互动反馈（吃东西动画 + 谢谢主人/蹭蹭 + 子弹）
+          const wrap = document.querySelector('.shop-scene .cherry-char')
+          if (wrap) {
+            wrap.classList.remove('eating')
+            void wrap.offsetWidth // 强制 reflow，确保动画可重复触发
+            wrap.classList.add('eating')
+          }
+          const add = Store.clickCherry()
+          if (add) {
+            toast('主人，记得找我玩哦！ 子弹 +' + add)
+            setTimeout(() => renderShop(), 4800) // 动画结束后再刷新，更新子弹数
+          } else {
+            toast('樱桃蹭了蹭你 🐾')
+            setTimeout(() => { const w = document.querySelector('.shop-scene .cherry-char'); if (w) w.classList.remove('eating') }, 4800)
+          }
+          break
+        }
         case 'admin-tab': state.admin.tab = d.tab; renderAdmin(); break
         case 'admin-period': state.admin.period = d.p; renderAdmin(); break
         case 'article-add': state.admin.editArticle = -2; renderAdmin(); break

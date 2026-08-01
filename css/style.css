@@ -132,6 +132,18 @@ body {
   100% { opacity: 0; transform: translateY(-54px) scale(1.1); }
 }
 
+/* 狗狗饱腹状态气泡（常驻显示：营地物资站 + 首页通用） */
+.cherry-status {
+  position: absolute; left: 50%; top: -30%;
+  transform: translateX(-50%);
+  padding: 4px 11px; border-radius: 14px;
+  font-size: 13px; font-weight: 800; white-space: nowrap;
+  pointer-events: none; z-index: 6;
+  box-shadow: 0 2px 6px rgba(0,0,0,.18);
+}
+.cherry-status.full   { background: #e7f7ec; color: #1f9d55; border: 2px solid #b7e4c7; }
+.cherry-status.hungry { background: #fff4e6; color: #d9480f; border: 2px solid #ffd8a8; }
+
 
 /* ===== 角色动画：让两位人物更有"活气" ===== */
 /* 入场：仅淡入，不做位移/缩放，避免反复重渲染时再"弹"一下 */
