@@ -192,10 +192,8 @@ window.Store = (function () {
     // 基础任务 +8，突击挑战（侦察连·阅读）+10
     const bullets = isAssault(key) ? 10 : 8
     user.totalScore += bullets
-    // 闯关只管饱腹的前 80%：仅当未达 80% 时累加，封顶 80%（绝不把已喂食喂饱的拉回）；剩余 20% 必须由喂狗粮补满
-    if (user.cherryFullness < 80) user.cherryFullness = Math.min(80, user.cherryFullness + 25)
-    let bonus = 0, allDone = false, streakBonus = 0
-    // 当日基础任务 + 突击挑战全部通关 → 额外 +10
+    let bonus = 0, allDone = false, streakBonus = 0, fullInc = 0
+    // 当日基础任务 + 突击挑战全部通关 → 额外 +10，并一次性奖励樱桃饱腹 +25%（封顶 80%）
     if (keys.every(k => user.dailyTasks[k])) {
       allDone = true
       if (!user._fullCountedToday) {
@@ -203,6 +201,11 @@ window.Store = (function () {
         bonus = 10
         user.totalScore += bonus
         user.totalDays += 1
+      }
+      if (user.cherryFullness < 80) {
+        const before = user.cherryFullness
+        user.cherryFullness = Math.min(80, user.cherryFullness + 25)
+        fullInc = user.cherryFullness - before
       }
     }
     // 连续打卡：完成 3 项每日基础任务即维持；连续满 5 天一次性 +50（每满5天发一次）
@@ -216,7 +219,7 @@ window.Store = (function () {
       }
     }
     save()
-    return { bullets, bonus, allDone, streakBonus }
+    return { bullets, bonus, allDone, streakBonus, fullInc }
   }
   function canRetry(key) { return user.retryCount[key] < 3 }
   function incRetry(key) { user.retryCount[key] = (user.retryCount[key] || 0) + 1; save() }

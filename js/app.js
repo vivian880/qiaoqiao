@@ -303,7 +303,7 @@
           <div class="result-score">答对 <span class="big-num">${q.correctCount}</span> / ${q.total} 题</div>
           <div class="result-stars">${stars(q.correctCount, q.total)}</div>
           <div class="result-bar"><div class="result-bar-fill" style="width:${pct}%"></div></div>
-          ${q.review ? '<div class="result-reward">复习模式不重复发奖励</div>' : (passed ? '<div class="result-reward">🔸 子弹 +' + bulletsFor(q.key) + ' · 樱桃饱腹 +25%</div>' : (q.key === 'intel_words' ? '<div class="result-reward">识字连要全部答对才算通关，换一批新题再冲！</div>' : '<div class="result-reward">差一点点，换一批新题再冲！</div>'))}
+          ${q.review ? '<div class="result-reward">复习模式不重复发奖励</div>' : (passed ? '<div class="result-reward">' + (q.fullInc ? '🎉 今日全部通关！子弹 +' + bulletsFor(q.key) + ' · 樱桃饱腹 +' + q.fullInc + '%' : '🔸 子弹 +' + bulletsFor(q.key) + ' · 完成全部任务再喂饱樱桃') + '</div>' : (q.key === 'intel_words' ? '<div class="result-reward">识字连要全部答对才算通关，换一批新题再冲！</div>' : '<div class="result-reward">差一点点，换一批新题再冲！</div>'))}
           ${q.reviewCount ? '<div class="result-reward">📕 本轮含错题复习 ' + q.reviewCount + ' 道（答对已移出错题库）</div>' : ''}
           ${wrong}
           ${action}
@@ -398,7 +398,7 @@
     if (passed && !q.review) {
       const oldRank = Store.getRankInfo().name
       const res = Store.recordPass(q.key)
-      bonus = res.bonus; allDone = res.allDone; streakBonus = res.streakBonus || 0
+      bonus = res.bonus; allDone = res.allDone; streakBonus = res.streakBonus || 0; q.fullInc = res.fullInc || 0
       earned = res.bullets + bonus + streakBonus
       // 军衔提升检测：升级时邱少云敬礼喊话（金色 toast），并返回营地后播放敬礼动画
       const newRank = Store.getRankInfo().name
