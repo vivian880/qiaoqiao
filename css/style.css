@@ -253,6 +253,12 @@ ruby { ruby-position: over; }
 ruby rt { font-size: 11px; color: #999; }
 
 .q-text { color: #fff; font-size: 22px; font-weight: bold; text-align: center; padding: 22px 18px; line-height: 1.5; }
+/* 生字认读：单字放大、无符号，仅让小朋友选正确读音 */
+.q-char-big {
+  color: #fff; font-size: 88px; font-weight: bold; text-align: center;
+  padding: 18px 18px 6px; line-height: 1.1; text-shadow: 0 2px 10px rgba(0,0,0,.35);
+}
+.q-read-hint { color: #ffe6a3; font-size: 17px; text-align: center; padding: 0 18px 14px; letter-spacing: 1px; }
 .options { padding: 0 16px; }
 .option {
   background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 12px;

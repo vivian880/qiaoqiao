@@ -390,10 +390,11 @@
   }
 
   // -- 认读题（看字选拼音，3选项，用于按"单元+课文"进度出题） --
+  // reading:true 标记让渲染层把单字放大显示、无括号符号，仅让小朋友选正确读音
   function readingPinyinQuestion(w, all) {
     const others = shuffle(all.filter(x => x.p !== w.p && x.c !== w.c).map(x => x.p))
     const o = makeOptions(w.p, others.slice(0, 8), 3)
-    return { text: `「${w.c}」的正确读音是？`, options: o.options, answer: o.answer }
+    return { text: w.c, options: o.options, answer: o.answer, reading: true }
   }
 
   // ---------- 语文专项题库（js/data/zhuanti.js：标准三选一格式） ----------

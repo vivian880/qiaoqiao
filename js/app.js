@@ -322,7 +322,9 @@
         <span class="quiz-progress">${q.cur + 1} / ${q.total}</span>
       </div>
       ${banner}
-      <div class="q-text">${rubyfy(esc(item.text))}</div>
+      ${item.reading
+        ? `<div class="q-char-big">${rubyfy(esc(item.text))}</div><div class="q-read-hint">请选出正确的读音</div>`
+        : `<div class="q-text">${rubyfy(esc(item.text))}</div>`}
       <div class="options">`
     item.options.forEach((o, i) => {
       let cls = 'option'
