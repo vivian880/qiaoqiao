@@ -1,12 +1,12 @@
 // 主控制器
 (function () {
   const TASKS = {
-    scout: { key: 'scout', name: '侦察连·阅读', icon: '🔭', desc: '阅读理解（读短文答3题）· 突击挑战', baseTotal: 3 },
-    artillery: { key: 'artillery', name: '炮兵连·乘除法', icon: '💣', desc: '九九乘除法 · 10题', baseTotal: 10 },
-    intel_words: { key: 'intel_words', name: '识字连', icon: '📖', desc: '每日15字 · 全对通关', baseTotal: 15 },
-    intel_special: { key: 'intel_special', name: '特训连', icon: '📝', desc: '拼音专项10题 · 全对通关', baseTotal: 10 },
-    rifle: { key: 'rifle', name: '步枪连·加减法', icon: '🔫', desc: '100以内加减法 · 10题', baseTotal: 10 },
-    logistics: { key: 'logistics', name: '后勤连·综合实践', icon: '🎒', desc: '长度/方向/钟表', baseTotal: 10 }
+    scout: { key: 'scout', name: '侦察连·阅读', icon: '🔭', desc: '阅读理解（读短文答3题）· 突击挑战' },
+    artillery: { key: 'artillery', name: '炮兵连·乘除法', icon: '💣', desc: '九九乘除法 · 10题' },
+    intel_words: { key: 'intel_words', name: '识字连', icon: '📖', desc: '每日15字 · 全对通关' },
+    intel_special: { key: 'intel_special', name: '特训连', icon: '📝', desc: '拼音专项10题 · 全对通关' },
+    rifle: { key: 'rifle', name: '步枪连·加减法', icon: '🔫', desc: '100以内加减法 · 10题' },
+    logistics: { key: 'logistics', name: '后勤连·综合实践', icon: '🎒', desc: '长度/方向/钟表' }
   }
   // 特训连轮换：周一同音字 / 周二多音字 / 周三前后鼻音 / 周四形近字 / 周五混合挑战（周末无此任务）
   const INTEL_SPECIAL_DESC = { 1: '同音字10题 · 全对通关', 2: '多音字10题 · 全对通关', 3: '前后鼻音10题 · 全对通关', 4: '形近字10题 · 全对通关', 5: '混合挑战10题 · 全对通关', 6: '混合挑战10题', 0: '混合挑战10题' }
@@ -49,10 +49,9 @@
   function passFor(total) {
     return total
   }
-  // 情报处·生字认读：15 字须全部答对才算通关；其余任务为全对制
+  // 所有任务均为全对制：答对题数须达到通关线（含识字连的认读+复习题，与其他连队一致）
   function quizPassed(q) {
     if (q.total === 0) return false       // 防护：空题库不应自动通关发奖
-    if (q.key === 'intel_words') return q.readingCorrect === q.readingTotal
     return q.correctCount >= passFor(q.total)
   }
   function toast(msg, cls) {
