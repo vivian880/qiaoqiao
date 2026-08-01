@@ -204,7 +204,7 @@ window.Store = (function () {
       }
       if (user.cherryFullness < 80) {
         const before = user.cherryFullness
-        user.cherryFullness = Math.min(80, user.cherryFullness + 25)
+        user.cherryFullness = 80
         fullInc = user.cherryFullness - before
       }
     }
