@@ -38,11 +38,12 @@ body {
 }
 .today-label { color: #fff; font-size: 18px; font-weight: bold; }
 
-/* 任务卡片 */
+/* 任务卡片：全部统一淡黄底+黄色边框，像特训连已完成状态一样醒目 */
 .task-list { padding: 8px 14px; }
 .task-card {
-  display: flex; align-items: center; background: #fff; border: 3px solid #c9c9c9;
+  display: flex; align-items: center; background: #fffdf0; border: 3px solid #f2c200;
   border-radius: 18px; padding: 12px 14px; margin-bottom: 12px; cursor: pointer;
+  box-shadow: 0 0 0 3px #fff3b0 inset;
 }
 .task-card.done { border-color: #f2c200; background: #fffdf0; box-shadow: 0 0 0 3px #fff3b0 inset; }
 .task-icon { font-size: 34px; width: 50px; text-align: center; }
