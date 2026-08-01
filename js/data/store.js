@@ -259,7 +259,7 @@ window.Store = (function () {
     user.totalScore -= f.price
     user.cherryFullness = Math.min(100, (user.cherryFullness || 0) + f.full)
     save()
-    return { ok: true, kind: 'food', msg: '樱桃大口吃起来啦 🦴 饱腹 +' + f.full + '%' }
+    return { ok: true, kind: 'food', msg: '樱桃大口吃起来啦 🦴 谢谢主人！饱腹 +' + f.full + '%' }
   }
   // 板块二：军衔装束（皮肤）
   function buySkin(s) {
@@ -281,7 +281,7 @@ window.Store = (function () {
     user.totalScore -= e.price
     user.ownedItems.push(e.id)
     save()
-    return { ok: true, kind: 'equip', msg: '购买成功，点击穿戴「' + e.name + '」' }
+    return { ok: true, kind: 'equip', msg: '谢谢主人！已购买「' + e.name + '」，点击穿戴' }
   }
   // 穿戴/脱下配件（同部位互斥）
   function toggleEquip(id) {
@@ -308,7 +308,7 @@ window.Store = (function () {
     user.totalScore -= w.price
     user.militaryCollection[w.id] = true
     save()
-    return { ok: true, kind: 'weapon', msg: '已收藏「' + w.name + '」！' }
+    return { ok: true, kind: 'weapon', msg: '谢谢主人！已收藏「' + w.name + '」' }
   }
   // 统一购买入口（按 id 自动判定板块）
   function buyItem(id) {

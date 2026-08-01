@@ -764,21 +764,17 @@
           if (Store.canRetry(state.quiz.key)) { Store.incRetry(state.quiz.key); startQuiz(state.quiz.key) }
           else toast('今天已练3次'); break
         case 'click-cherry': {
-          // 先播放"吃东西+谢谢主人"动画（无论今天是否已领过奖励，点击都给反馈）
+          // 抚摸互动：尾巴摇摆 + 飘心（不说"谢谢主人"；谢谢主人只在喂食物/买装备时出现）
           const wrap = document.querySelector('.cherry-char')
           if (wrap) {
-            wrap.classList.remove('eating')
+            wrap.classList.remove('petting')
             void wrap.offsetWidth // 强制 reflow，确保动画可重复触发
-            wrap.classList.add('eating')
+            wrap.classList.add('petting')
+            setTimeout(() => { const w = document.querySelector('.cherry-char'); if (w) w.classList.remove('petting') }, 2400)
           }
           const add = Store.clickCherry()
-          if (add) {
-            toast('主人，记得找我玩哦！ 子弹 +' + add)
-            setTimeout(() => renderHome(), 4800) // 动画结束后再刷新，更新子弹数
-          } else {
-            toast('樱桃蹭了蹭你 🐾')
-            setTimeout(() => { const w = document.querySelector('.cherry-char'); if (w) w.classList.remove('eating') }, 4800)
-          }
+          if (add) toast('樱桃摇摇尾巴，好开心！子弹 +' + add)
+          else toast('樱桃朝你摇了摇尾巴 🐕')
           break
         }
         case 'click-qiao': {
@@ -817,33 +813,43 @@
         case 'buy-equip': {
           const r = Store.buyItem(d.id)
           if (!r.ok) { toast(r.msg); break }
-          toast(r.msg); renderShop(); break
+          toast(r.msg); renderShop()
+          // 买装备：樱桃开心吃东西 + 说谢谢主人
+          const dog = document.querySelector('.shop-scene .cherry-char')
+          if (dog) {
+            dog.classList.remove('eating'); void dog.offsetWidth; dog.classList.add('eating')
+            setTimeout(() => { const d2 = document.querySelector('.shop-scene .cherry-char'); if (d2) d2.classList.remove('eating') }, 4800)
+          }
+          break
         }
         case 'toggle-equip': { if (Store.toggleEquip(d.id)) toast('已更新穿戴'); renderShop(); break }
         case 'buy-weapon': {
           const r = Store.buyItem(d.id)
           if (!r.ok) { toast(r.msg); break }
-          toast(r.msg); renderShop(); break
+          toast(r.msg); renderShop()
+          // 买军备：樱桃开心吃东西 + 说谢谢主人
+          const dog = document.querySelector('.shop-scene .cherry-char')
+          if (dog) {
+            dog.classList.remove('eating'); void dog.offsetWidth; dog.classList.add('eating')
+            setTimeout(() => { const d2 = document.querySelector('.shop-scene .cherry-char'); if (d2) d2.classList.remove('eating') }, 4800)
+          }
+          break
         }
         case 'buy-poor': toast('子弹不够，去做任务赚吧！'); break
         case 'show-tip': showPlayTip(); break
         case 'show-shoprules': showShopRules(); break
         case 'shop-cherry': {
-          // 商店页点狗狗：和首页一致的互动反馈（吃东西动画 + 谢谢主人/蹭蹭 + 子弹）
+          // 商店页抚摸狗狗：尾巴摇摆 + 飘心（与首页一致），不说谢谢主人
           const wrap = document.querySelector('.shop-scene .cherry-char')
           if (wrap) {
-            wrap.classList.remove('eating')
+            wrap.classList.remove('petting')
             void wrap.offsetWidth // 强制 reflow，确保动画可重复触发
-            wrap.classList.add('eating')
+            wrap.classList.add('petting')
+            setTimeout(() => { const w = document.querySelector('.shop-scene .cherry-char'); if (w) w.classList.remove('petting') }, 2400)
           }
           const add = Store.clickCherry()
-          if (add) {
-            toast('主人，记得找我玩哦！ 子弹 +' + add)
-            setTimeout(() => renderShop(), 4800) // 动画结束后再刷新，更新子弹数
-          } else {
-            toast('樱桃蹭了蹭你 🐾')
-            setTimeout(() => { const w = document.querySelector('.shop-scene .cherry-char'); if (w) w.classList.remove('eating') }, 4800)
-          }
+          if (add) toast('樱桃摇摇尾巴，好开心！子弹 +' + add)
+          else toast('樱桃朝你摇了摇尾巴 🐕')
           break
         }
         case 'admin-tab': state.admin.tab = d.tab; renderAdmin(); break
