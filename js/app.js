@@ -317,7 +317,7 @@
       ? `<div class="review-banner">📕 错题复习轮（共 ${q.reviewCount} 道，答对即移出错题库）</div>` : ''
     let html = `
       <div class="quiz-head">
-        <div class="quiz-back" data-action="quiz-back">← 营地</div>
+        <div class="quiz-back" data-action="quiz-back">${q.article ? '← 文章' : '← 营地'}</div>
         <span class="quiz-title">${q.meta.icon} ${q.meta.name}${q.review ? ' <span class="review-tag">复习模式</span>' : ''}</span>
         <span class="quiz-progress">${q.cur + 1} / ${q.total}</span>
       </div>
@@ -789,7 +789,14 @@
         case 'go-shop': state.view = 'shop'; state.shopTab = 'feed'; renderShop(); break
         case 'go-admin': adminGate(); break
         case 'go-home': state.view = 'home'; state.quiz = null; renderHome(); break
-        case 'quiz-back': state.view = 'home'; state.quiz = null; renderHome(); break
+        case 'quiz-back':
+          // 阅读题(侦察连)答题中点返回：先回到阅读内容，可重读文章；从阅读内容再点返回才回营地
+          if (state.quiz && state.quiz.phase === 'quiz' && state.quiz.article) {
+            state.quiz.phase = 'article'; renderQuiz()
+          } else {
+            state.view = 'home'; state.quiz = null; renderHome()
+          }
+          break
         case 'quiz-start': state.quiz.phase = 'quiz'; renderQuiz(); break
         case 'answer': onAnswer(parseInt(d.i)); break
         case 'quiz-retry':
