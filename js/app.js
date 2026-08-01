@@ -51,6 +51,7 @@
   }
   // 情报处·生字认读：15 字须全部答对才算通关；其余任务为全对制
   function quizPassed(q) {
+    if (q.total === 0) return false       // 防护：空题库不应自动通关发奖
     if (q.key === 'intel_words') return q.readingCorrect === q.readingTotal
     return q.correctCount >= passFor(q.total)
   }
@@ -293,7 +294,7 @@
         const can = Store.canRetry(q.key)
         action = can
           ? `<button class="big-btn btn-green" data-action="quiz-retry">🔁 再练一次（新题）</button><div class="retry-tip">今天还可重练 ${3 - (Store.getUser().retryCount[q.key] || 0)} 次</div>`
-          : `<div class="retry-tip">今天已练3次，明天再来吧！</div><button class="big-btn btn-pink" data-action="quiz-back">🏠 返回营地</button>`
+          : `<div class="retry-tip">今天已重练3次，明天再来吧！</div><button class="big-btn btn-pink" data-action="quiz-back">🏠 返回营地</button>`
       }
       app.innerHTML = `
         <div class="quiz-head"><div class="quiz-back" data-action="quiz-back">← 营地</div><span class="quiz-title">${q.meta.icon} ${q.meta.name}</span><span class="quiz-progress"></span></div>
@@ -812,7 +813,7 @@
         case 'answer': onAnswer(parseInt(d.i)); break
         case 'quiz-retry':
           if (Store.canRetry(state.quiz.key)) { Store.incRetry(state.quiz.key); startQuiz(state.quiz.key) }
-          else toast('今天已练3次'); break
+          else toast('今天已重练3次，明天再来吧'); break
         case 'click-cherry': {
           // 抚摸互动：尾巴摇摆 + 飘心（不说"谢谢主人"；谢谢主人只在喂食物/买装备时出现）
           const wrap = document.querySelector('.cherry-char')
