@@ -241,7 +241,8 @@
     if (wb.length) {
       const cap = Math.min(wb.length, 10)
       shuffle(wb).slice(0, cap).forEach(w => {
-        questions.push({ text: w.text, options: w.options.slice(), answer: w.answer, _reviewKey: w.key })
+        if (!w || !w.text || !Array.isArray(w.options) || w.options.length < 2 || typeof w.answer !== 'number' || w.text.includes('undefined')) return
+        questions.push({ char: w.char || '', word: w.word || '', text: w.text, options: w.options.slice(), answer: w.answer, _reviewKey: w.key })
       })
       reviewCount = cap
     }
@@ -367,7 +368,7 @@
       q.attempts = (q.attempts || 0) + 1
       q.wrongSel = i
       if (!q.wrongLogged) {
-        Store.addWrong({ task: q.key, text: item.text, options: item.options.slice(), answer: item.answer })
+        Store.addWrong({ task: q.key, char: item.char || '', word: item.word || '', text: item.text, options: item.options.slice(), answer: item.answer })
         q.wrongList.push({ text: item.text, your: item.options[i], correct: item.options[item.answer] })
         q.wrongLogged = true
       }

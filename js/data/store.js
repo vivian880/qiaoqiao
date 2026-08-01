@@ -4,7 +4,7 @@ window.Store = (function () {
   const WKEY = 'qiaoqiao_words_v2'
   const AKEY = 'qiaoqiao_articles_v2'
   // 本地数据结构版本：修改错题/题库格式后 bump，用于自动清空旧格式错题库
-  const DATA_VERSION = 3
+  const DATA_VERSION = 4
 
   // ===== 营地物资站（重构：四大板块）=====
   // 板块一：战备口粮（消耗品，兑换后樱桃饱腹即时增加，每日重置为 0%）
@@ -432,7 +432,7 @@ window.Store = (function () {
   function wrongKey(task, text, answer) { return task + '|' + text + '|' + answer }
   function addWrong(q) {
     if (!user.wrongBank) user.wrongBank = []
-    const item = { key: wrongKey(q.task, q.text, q.answer), task: q.task, text: q.text, options: q.options.slice(), answer: q.answer, date: todayStr() }
+    const item = { key: wrongKey(q.task, q.text, q.answer), task: q.task, char: q.char || '', word: q.word || '', text: q.text, options: q.options.slice(), answer: q.answer, date: todayStr() }
     if (!user.wrongBank.some(x => x.key === item.key)) { user.wrongBank.push(item); save() }
   }
   function getWrongBank() { return user.wrongBank || [] }
