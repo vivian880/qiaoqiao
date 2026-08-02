@@ -47,7 +47,23 @@ for (const [name, arr] of Object.entries(libs)) {
         console.log(`[答案不唯一] ${name} ${id} 正确项值="${opts[ans]}" 在选项中出现 ${cnt} 次`); problems++
       }
     }
-    // 5. 拼音类（非多音字）检查 answer 选项与其它选项不应完全相等（上面已覆盖）
+    // 5. 多音字：目标字在词语中应只出现一次，否则题目有歧义（如"数数"）
+    if (name === 'DuoYinZi' && it.word && it.char) {
+      const count = (it.word.split(it.char).length - 1)
+      if (count > 1) {
+        console.log(`[多音字歧义] ${name} ${id} "${it.char}" 在词语「${it.word}」中出现 ${count} 次`); problems++
+      }
+    }
+    // 6. 填空辨析题：prompt 必须含空括号；选项必须是单字
+    if (name === 'XingJinFill' || name === 'TongYinFill') {
+      if (!it.prompt || !/（\s*）/.test(it.prompt)) {
+        console.log(`[填空题缺空] ${name} ${id} prompt="${it.prompt}"`); problems++
+      }
+      const badOpts = (it.options || []).filter(o => !/^[\u4e00-\u9fff]$/.test(o))
+      if (badOpts.length) {
+        console.log(`[填空题选项非单字] ${name} ${id} options=${JSON.stringify(it.options)}`); problems++
+      }
+    }
   })
   console.log(`${name}: 共 ${arr.length} 题，结构检查完成`)
 }
