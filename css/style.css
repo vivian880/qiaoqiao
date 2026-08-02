@@ -255,9 +255,9 @@ ruby rt { font-size: 11px; color: #999; }
 
 .q-text { color: #fff; font-size: 22px; font-weight: bold; text-align: center; padding: 22px 18px; line-height: 1.5; }
 /* 专项题：题干中的"字"高亮醒目（橙金高亮药丸 + 描边发光，确保小朋友一眼看到） */
-.q-char { display: inline-block; color: #ffe06a; font-size: 36px; font-weight: 900; padding: 0 4px; margin: 0 2px; border-radius: 6px; vertical-align: middle; line-height: 1.1; }
+.q-char { display: inline-block; color: #ffe06a; font-size: 36px; font-weight: 900; padding: 0 4px; margin: 0 2px; border-radius: 6px; vertical-align: middle; line-height: 1.1; position: relative; top: -2px; }
 /* 专项题：题干中的"词语"也高亮显示 */
-.q-word { display: inline-block; color: #ffe06a; font-size: 26px; font-weight: 900; padding: 0 2px; margin: 0 2px; vertical-align: middle; line-height: 1.1; }
+.q-word { display: inline-block; color: #ffe06a; font-size: 26px; font-weight: 900; padding: 0 2px; margin: 0 2px; vertical-align: middle; line-height: 1.1; position: relative; top: -2px; }
 .q-note { display: block; margin-top: 10px; color: #9fe0ff; font-size: 15px; font-weight: normal; letter-spacing: .5px; }
 /* 生字认读：单字放大、无发光高亮，仅让小朋友选正确读音 */
 .q-char-big {
