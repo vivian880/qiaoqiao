@@ -35,6 +35,10 @@
     if (!s) return ''
     return String(s).replace(/([一-龥])\(([^)]+)\)/g, '<ruby>$1<rt>$2</rt></ruby>')
   }
+  function articleRubyfy(s) {
+    if (!s) return ''
+    return String(s).replace(/([一-龥])\(([^)]+)\)/g, '<span class="py-cell"><span class="py">$2</span><span class="hz">$1</span></span>')
+  }
   function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])) }
   function shuffle(a) { const x = a.slice(); for (let i = x.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = x[i]; x[i] = x[j]; x[j] = t } return x }
   function stars(n, total) {
@@ -270,7 +274,7 @@
         </div>
         <div class="article-box">
           <div class="article-title">${rubyfy(q.article.title)}</div>
-          <div class="article-body">${rubyfy(q.article.body)}</div>
+          <div class="article-body">${articleRubyfy(q.article.body)}</div>
         </div>
         <button class="big-btn btn-green" data-action="quiz-start">📖 开始答题</button>`
       return

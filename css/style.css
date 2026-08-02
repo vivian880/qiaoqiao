@@ -249,8 +249,10 @@ body {
 
 .article-box { background: #fff; margin: 0 14px; border-radius: 14px; padding: 12px 14px; max-height: 52vh; overflow: auto; }
 .article-title { font-size: 20px; font-weight: bold; color: #4A6B3D; margin-bottom: 6px; }
-.article-body { font-size: 18px; line-height: 1.7; color: #333; font-weight: 400; }
-.article-body ruby { display: inline-block; text-align: center; width: 3.6em; vertical-align: baseline; }
+.article-body { font-size: 18px; line-height: 1.75; color: #333; font-weight: 400; }
+.article-body .py-cell { display: inline-block; width: 2.2em; text-align: center; vertical-align: baseline; }
+.article-body .py { display: block; font-size: 8px; color: #555; line-height: 1.2; white-space: nowrap; }
+.article-body .hz { display: block; font-size: 18px; color: #333; line-height: 1.2; }
 ruby { ruby-position: over; ruby-align: center; }
 ruby rt { font-size: 10px; color: #555; font-weight: 400; letter-spacing: 0; white-space: nowrap; }
 
