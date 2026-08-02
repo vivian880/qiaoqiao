@@ -255,9 +255,9 @@ ruby rt { font-size: 11px; color: #999; }
 
 .q-text { color: #fff; font-size: 22px; font-weight: bold; text-align: center; padding: 22px 18px; line-height: 1.5; }
 /* 专项题：题干中的"字"高亮醒目（橙金高亮药丸 + 描边发光，确保小朋友一眼看到） */
-.q-char { display: inline-block; color: #fff; font-size: 36px; font-weight: 900; padding: 2px 11px; margin: 0 3px; border-radius: 10px; background: linear-gradient(180deg,#ffb347 0%,#ff8c1a 100%); box-shadow: 0 3px 10px rgba(255,140,26,.55), inset 0 1px 0 rgba(255,255,255,.45); border: 2px solid #fff3d6; text-shadow: 0 1px 2px rgba(0,0,0,.25); vertical-align: middle; line-height: 1.1; }
+.q-char { display: inline-block; color: #fff; font-size: 36px; font-weight: 900; padding: 2px 11px; margin: 0 3px; border-radius: 10px; background: linear-gradient(180deg,#ffb347 0%,#ff8c1a 100%); border: 2px solid #fff3d6; vertical-align: middle; line-height: 1.1; }
 /* 专项题：题干中的"词语"也高亮显示 */
-.q-word { display: inline-block; color: #ffe06a; font-size: 26px; font-weight: 900; padding: 1px 8px; margin: 0 2px; border-radius: 8px; background: rgba(255,255,255,.18); text-shadow: 0 1px 3px rgba(0,0,0,.35); vertical-align: middle; line-height: 1.1; }
+.q-word { display: inline-block; color: #ffe06a; font-size: 26px; font-weight: 900; padding: 1px 8px; margin: 0 2px; border-radius: 8px; background: rgba(255,255,255,.18); vertical-align: middle; line-height: 1.1; }
 .q-note { display: block; margin-top: 10px; color: #9fe0ff; font-size: 15px; font-weight: normal; letter-spacing: .5px; }
 /* 生字认读：单字放大、无发光高亮，仅让小朋友选正确读音 */
 .q-char-big {
