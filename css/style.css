@@ -268,9 +268,9 @@ ruby rt { font-size: 11px; color: #999; }
 .q-read-hint { color: #ffe6a3; font-size: 17px; text-align: center; padding: 0 18px 14px; letter-spacing: 1px; }
 .options { padding: 0 16px; }
 .option {
-  background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 12px;
-  font-size: 20px; text-align: center; cursor: pointer; min-height: 52px;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: #fff; border-radius: 16px; padding: 16px 16px 16px 22px; margin-bottom: 12px;
+  font-size: 20px; cursor: pointer; min-height: 52px;
+  display: flex; align-items: center; justify-content: flex-start; gap: 16px;
 }
 .option.correct { background: #b6e3a8; border: 3px solid #4caf50; }
 .option.wrong { background: #ffc9c9; border: 3px solid #e23b3b; }
