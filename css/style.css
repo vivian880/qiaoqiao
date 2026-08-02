@@ -255,7 +255,7 @@ ruby rt { font-size: 11px; color: #999; }
 
 .q-text { color: #fff; font-size: 22px; font-weight: bold; text-align: center; padding: 22px 18px; line-height: 1.5; }
 /* 专项题：题干中的"字"高亮醒目（橙金高亮药丸 + 描边发光，确保小朋友一眼看到） */
-.q-char { display: inline-block; color: #fff; font-size: 36px; font-weight: 900; padding: 2px 11px; margin: 0 3px; border-radius: 10px; background: linear-gradient(180deg,#ffb347 0%,#ff8c1a 100%); border: 2px solid #fff3d6; vertical-align: middle; line-height: 1.1; }
+.q-char { display: inline-block; color: #ffe06a; font-size: 36px; font-weight: 900; padding: 0 4px; margin: 0 2px; border-radius: 6px; vertical-align: middle; line-height: 1.1; }
 /* 专项题：题干中的"词语"也高亮显示 */
 .q-word { display: inline-block; color: #ffe06a; font-size: 26px; font-weight: 900; padding: 1px 8px; margin: 0 2px; border-radius: 8px; background: rgba(255,255,255,.18); vertical-align: middle; line-height: 1.1; }
 .q-note { display: block; margin-top: 10px; color: #9fe0ff; font-size: 15px; font-weight: normal; letter-spacing: .5px; }
@@ -270,10 +270,15 @@ ruby rt { font-size: 11px; color: #999; }
 .option {
   background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 12px;
   font-size: 20px; text-align: center; cursor: pointer; min-height: 52px;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
 }
 .option.correct { background: #b6e3a8; border: 3px solid #4caf50; }
 .option.wrong { background: #ffc9c9; border: 3px solid #e23b3b; }
+.opt-label {
+  flex-shrink: 0; width: 28px; height: 28px; line-height: 28px; border-radius: 50%;
+  background: #e8f5e9; color: #4A6B3D; font-size: 16px; font-weight: 900;
+  text-align: center;
+}
 .fb { text-align: center; font-size: 20px; font-weight: bold; padding: 10px; }
 .fb-ok { color: #b6e3a8; }
 .fb-no { color: #ff8a8a; }

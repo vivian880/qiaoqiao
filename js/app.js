@@ -331,11 +331,13 @@
                 : `<div class="q-text"><span class="q-char">${esc(item.char)}</span> 的正确读音是？${item.note ? `<span class="q-note">${esc(item.note)}</span>` : ''}</div>`)
             : `<div class="q-text">${rubyfy(esc(item.text))}</div>`)}
       <div class="options">`
+    const labels = ['A', 'B', 'C', 'D']
     item.options.forEach((o, i) => {
       let cls = 'option'
       if (q.wrongSel === i) cls += ' wrong'
       else if (q.answered && i === item.answer) cls += ' correct'
-      html += `<div class="${cls}" data-action="answer" data-i="${i}">${rubyfy(esc(o))}</div>`
+      const label = labels[i] || (i + 1)
+      html += `<div class="${cls}" data-action="answer" data-i="${i}"><span class="opt-label">${label}</span>${rubyfy(esc(o))}</div>`
     })
     html += `</div>`
     if (q.answered) {
