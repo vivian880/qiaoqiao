@@ -260,6 +260,8 @@ ruby rt { font-size: 16px; color: #000; font-weight: 700; letter-spacing: .5px; 
 /* 专项题：题干中的"词语"也高亮显示 */
 .q-word { display: inline-block; color: #ffe06a; font-size: 26px; font-weight: 900; padding: 0 2px; margin: 0 2px; vertical-align: middle; line-height: 1.1; position: relative; top: -2px; }
 .q-note { display: block; margin-top: 10px; color: #9fe0ff; font-size: 15px; font-weight: normal; letter-spacing: .5px; }
+/* 填空辨析题：题干中的空括号（ ）高亮，让小朋友一眼看到要填字的位置 */
+.blank { color: #ffe06a; font-weight: 900; font-size: 1.25em; padding: 0 3px; }
 /* 生字认读：单字放大、无发光高亮，仅让小朋友选正确读音 */
 .q-char-big {
   color: #fff; font-size: 92px; font-weight: 900; text-align: center;

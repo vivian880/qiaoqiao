@@ -329,7 +329,7 @@
             ? (item.word
                 ? `<div class="q-text"><span class="q-char">${esc(item.char)}</span> 在 <span class="q-word">${esc(item.word)}</span> 里读什么音？${item.note ? `<span class="q-note">${esc(item.note)}</span>` : ''}</div>`
                 : `<div class="q-text"><span class="q-char">${esc(item.char)}</span> 的正确读音是？${item.note ? `<span class="q-note">${esc(item.note)}</span>` : ''}</div>`)
-            : `<div class="${q.key === 'rifle' ? 'q-text-math' : 'q-text'}">${rubyfy(esc(item.text))}</div>`)}
+            : `<div class="${q.key === 'rifle' ? 'q-text-math' : 'q-text'}">${rubyfy(esc(item.text)).replace('（ ）', '<span class="blank">（ ）</span>')}</div>`)}
       <div class="options">`
     const labels = ['A', 'B', 'C', 'D']
     item.options.forEach((o, i) => {

@@ -10,9 +10,11 @@ eval(code)
 
 const libs = {
   TongYinZi: global.window.TongYinZi,
+  TongYinFill: global.window.TongYinFill,
   DuoYinZi: global.window.DuoYinZi,
   HunYin: global.window.HunYin,
   XingJinZi: global.window.XingJinZi,
+  XingJinFill: global.window.XingJinFill,
   PingQiaoShe: global.window.PingQiaoShe,
 }
 

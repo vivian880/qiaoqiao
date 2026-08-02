@@ -410,10 +410,13 @@
     } else if (kind === 'pq') {
       text = `${item.char} 的正确读音是？`
       note = '注意 平舌音(z/c/s) 与 翘舌音(zh/ch/sh)'
+    } else if (kind === 'xj_fill' || kind === 'ty_fill') {
+      // 填空辨析：题干是带空括号的短语，选项为形近字/同音字（复用 prompt 字段）
+      text = item.prompt || `${item.char} 的正确读音是？`
     } else {
       text = `${item.char} 的正确读音是？`
     }
-    return { text, options: opts, answer: opts.indexOf(correct), char: item.char, word: item.word || null, note }
+    return { text, options: opts, answer: opts.indexOf(correct), char: item.char || null, word: item.word || null, note }
   }
   // 从某个专项集合走轮换池抽 n 题
   function zhuantiDraw(lib, key, n, kind) {
@@ -421,12 +424,13 @@
     return draw(key, lib.length, n).map(i => zhuantiQuestion(lib[i], kind))
   }
   function mixedZhuanti(n) {
-    // 周末混合挑战(周六/日)：同音2 + 多音2 + 前后鼻2 + 形近2 + 平翘舌2（n=10）
+    // 周末混合挑战(周六/日)：同音(1发音+1填空) + 多音2 + 前后鼻2 + 形近2(填空) + 平翘舌2（n=10）
     return shuffle(
-      zhuantiDraw(window.TongYinZi, 'mix_ty', 2, 'ty')
+      zhuantiDraw(window.TongYinZi, 'mix_ty', 1, 'ty')
+        .concat(zhuantiDraw(window.TongYinFill, 'mix_tyf', 1, 'ty_fill'))
         .concat(zhuantiDraw(window.DuoYinZi, 'mix_dy', 2, 'dy'))
         .concat(zhuantiDraw(window.HunYin, 'mix_hb', 2, 'hb'))
-        .concat(zhuantiDraw(window.XingJinZi, 'mix_xj', 2, 'xj'))
+        .concat(zhuantiDraw(window.XingJinFill, 'mix_xjf', 2, 'xj_fill'))
         .concat(zhuantiDraw(window.PingQiaoShe, 'mix_pq', 2, 'pq'))
     )
   }
@@ -474,10 +478,17 @@
     opts = opts || {}
     const wd = (typeof opts.weekday === 'number') ? opts.weekday : new Date().getDay()
     let qs, mode
-    if (wd === 1) { qs = zhuantiDraw(window.TongYinZi, 'zt_ty', 10, 'ty'); mode = '同音字 10 题' }
+    if (wd === 1) {
+      // 同音字：一半考"读音选拼音"，一半考"同音字填空辨析"（读音一样、字不同）
+      qs = shuffle(
+        zhuantiDraw(window.TongYinZi, 'zt_ty', 5, 'ty')
+          .concat(zhuantiDraw(window.TongYinFill, 'zt_tyf', 5, 'ty_fill'))
+      )
+      mode = '同音字 10 题'
+    }
     else if (wd === 2) { qs = zhuantiDraw(window.DuoYinZi, 'zt_dy', 10, 'dy'); mode = '多音字 10 题' }
     else if (wd === 3) { qs = zhuantiDraw(window.HunYin, 'zt_hb', 10, 'hb'); mode = '前后鼻音 10 题' }
-    else if (wd === 4) { qs = zhuantiDraw(window.XingJinZi, 'zt_xj', 10, 'xj'); mode = '形近字 10 题' }
+    else if (wd === 4) { qs = zhuantiDraw(window.XingJinFill, 'zt_xjf', 10, 'xj_fill'); mode = '形近字 10 题' }
     else if (wd === 5) { qs = zhuantiDraw(window.PingQiaoShe, 'zt_pq', 10, 'pq'); mode = '平翘舌 10 题' }
     else { qs = mixedZhuanti(10); mode = '混合挑战 10 题' } // 周末(周六/日)出混合；兜底也给混合
     return { questions: qs, mode }
