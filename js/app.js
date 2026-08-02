@@ -1,7 +1,7 @@
 // 主控制器
 (function () {
   const TASKS = {
-    scout: { key: 'scout', name: '侦察连·阅读', icon: '🔭', desc: '阅读理解（读短文答3题）· 突击挑战' },
+    scout: { key: 'scout', name: '侦察连·阅读', icon: '🔭', desc: '读短文答3题 · 革命/爱国题材优先' },
     artillery: { key: 'artillery', name: '炮兵连·乘除法', icon: '💣', desc: '九九乘除法 · 10题' },
     intel_words: { key: 'intel_words', name: '识字连', icon: '📖', desc: '当课生字 · 全对通关' },
     intel_special: { key: 'intel_special', name: '特训连', icon: '📝', desc: '拼音专项10题 · 全对通关' },

@@ -72,6 +72,9 @@
   // 每篇文章标注 reqUnits（所需已学单元）。家长在「学习进度」勾选的单元覆盖该文全部
   // reqUnits 时，此文才会出现——保证阅读内容不超纲、随学习进度逐步解锁。
   // 轮换：每天一篇，整池轮完自动重洗；key 含单元范围，不同进度各自独立轮换。
+  // 革命 / 爱国题材类型：阅读出题优先选择这些，强化国防教育
+  const PATRIOTIC_TYPES = new Set(['红色故事', '抗战小英雄', '红色榜样', '爱国教育'])
+
   function genScout(rank, opts) {
     const list = (opts && opts.articles && opts.articles.length) ? opts.articles : A
     const units = (opts && opts.units) || []
@@ -81,9 +84,12 @@
       const elig = list.filter(a => (a.reqUnits || []).every(u => set.has(u)))
       if (elig.length) pool = elig            // 不超纲：仅放出已学单元覆盖的文章
     }
-    const key = 'scout_' + (units.length ? units.slice().sort((a, b) => a - b).join('_') : 'all')
-    const idx = draw(key, pool.length, 1)[0]
-    const a = pool[idx]
+    // 优先革命 / 爱国题材：在已解锁文章里，若这批题材有可出题的，则只从这批里轮换
+    const rev = pool.filter(a => PATRIOTIC_TYPES.has(a.type))
+    const usePool = rev.length ? rev : pool
+    const key = 'scout_' + (units.length ? units.slice().sort((a, b) => a - b).join('_') : 'all') + (rev.length ? '_rev' : '')
+    const idx = draw(key, usePool.length, 1)[0]
+    const a = usePool[idx]
     return {
       article: a,
       questions: a.questions.map(q => ({
