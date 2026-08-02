@@ -62,8 +62,7 @@ window.TongYinZi = [
   {"id":"TY059","char":"阳","options":["yáng","yàn","yǎng"],"answer":0},
   {"id":"TY060","char":"洋","options":["yáng","yàn","yǎng"],"answer":0},
   {"id":"TY061","char":"星","options":["xīng","xīn","xìng"],"answer":0},
-  {"id":"TY062","char":"兴","options":["xīng","xīn","xìng"],"answer":0},
-  {"id":"TY063","char":"幸","options":["xìng","xīn","xīng"],"answer":0},
+  {"id":"TY062","char":"幸","options":["xìng","xīn","xīng"],"answer":0},
   {"id":"TY064","char":"云","options":["yún","yǔn","yùn"],"answer":0},
   {"id":"TY065","char":"运","options":["yùn","yǔn","yún"],"answer":0},
   {"id":"TY066","char":"先","options":["xiān","xiǎn","xiàng"],"answer":0},
@@ -134,6 +133,8 @@ window.DuoYinZi = [
   {"id":"DY048","char":"转","word":"转圈","options":['zhuàn', 'zhuǎn', 'zhuān'],"answer":0},
   {"id":"DY049","char":"背","word":"背后","options":['bèi', 'bēi', 'bē'],"answer":0},
   {"id":"DY050","char":"背","word":"背书包","options":['bēi', 'bèi', 'bē'],"answer":0},
+  {"id":"DY051","char":"兴","word":"高兴","options":['xìng', 'xīng', 'xìn'],"answer":0},
+  {"id":"DY052","char":"兴","word":"兴奋","options":['xīng', 'xìng', 'xìn'],"answer":0},
 ];
 
 window.HunYin = [
