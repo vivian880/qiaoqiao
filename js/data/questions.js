@@ -445,14 +445,28 @@
     const cu = (typeof opts.currentUnit === 'number') ? opts.currentUnit : 1   // 当前学到第几单元
     let cl = opts.currentLesson
     if (cl == null) { const uls = W.getUnitLessons(cu); cl = uls.length ? uls[uls.length - 1].lesson : '1' }
+    cl = String(cl)
+    const uls = W.getUnitLessons(cu)
+    // 当「当前课文」是单元最后一课（通常为语文园地）时，视为该单元已学完 → 整单元随机复习
+    const isUnitEnd = !!(uls.length && String(uls[uls.length - 1].lesson) === cl)
     const ukey = 'u' + cu + '_l' + cl
-    const target = W.loOf(cu, cl)
-    const base = W.getCoveredWords(cu, cl)
+    let base, modeLabel
+    if (isUnitEnd) {
+      // 单元学完：整个单元所有生字随机出题（整单元混出）
+      base = W.CHARS.filter(e => e.unit === cu).map(e => ({ c: e.char, p: e.pinyin, group: '', type: e.type }))
+      modeLabel = '单元复习 · 整单元随机'
+    } else {
+      // 当课只出当课的字（不混入其他已学课文）
+      base = W.CHARS.filter(e => e.unit === cu && String(e.lesson) === cl).map(e => ({ c: e.char, p: e.pinyin, group: '', type: e.type }))
+      modeLabel = '当课生字 · 第' + cl + '课'
+    }
+    // 家长导入的生字：按 unit（整单元模式）或 unit+lesson（当课模式）匹配
     const imported = (window.Store && window.Store.getImportedWords ? window.Store.getImportedWords() : [])
-      .filter(w => (w.lo || 999) <= target)
+      .filter(w => Number(w.unit) === cu && (isUnitEnd ? true : String(w.lesson) === cl))
       .map(w => ({ c: w.char, p: w.pinyin, group: '', type: w.type || '会认', imported: true }))
     const all = base.concat(imported)
-    const need = Math.min(15, all.length)
+    // 当课展示该课全部生字；整单元模式最多取 20 字随机
+    const need = isUnitEnd ? Math.min(20, all.length) : all.length
     // 优先级分组：会认 > 会写 > 其他（导入/无类型）
     const hasType = w => typeof w.type === 'string' && w.type.length > 0
     const huiRen = all.filter(w => hasType(w) && w.type.indexOf('会认') >= 0)
@@ -468,7 +482,7 @@
     const othQ = pick(other,  'words_oth_' + ukey, Math.min(need - renQ.length - xieQ.length, other.length))
     const sel = renQ.concat(xieQ).concat(othQ)
     const qs = sel.map(w => readingPinyinQuestion(w, all))
-    return { questions: qs, mode: '生字认读 · ' + sel.length + ' 字', readingTotal: sel.length }
+    return { questions: qs, mode: modeLabel + ' · ' + sel.length + ' 字', readingTotal: sel.length }
   }
 
   // ---------- 任务B：情报处·语文专项（周一至周五，周末无） ----------

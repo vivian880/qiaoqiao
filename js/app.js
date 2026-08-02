@@ -3,7 +3,7 @@
   const TASKS = {
     scout: { key: 'scout', name: '侦察连·阅读', icon: '🔭', desc: '阅读理解（读短文答3题）· 突击挑战' },
     artillery: { key: 'artillery', name: '炮兵连·乘除法', icon: '💣', desc: '九九乘除法 · 10题' },
-    intel_words: { key: 'intel_words', name: '识字连', icon: '📖', desc: '每日15字 · 全对通关' },
+    intel_words: { key: 'intel_words', name: '识字连', icon: '📖', desc: '当课生字 · 全对通关' },
     intel_special: { key: 'intel_special', name: '特训连', icon: '📝', desc: '拼音专项10题 · 全对通关' },
     rifle: { key: 'rifle', name: '步枪连·加减法', icon: '🔫', desc: '100以内加减法 · 10题' },
     logistics: { key: 'logistics', name: '后勤连·综合实践', icon: '🎒', desc: '长度/方向/钟表' }
@@ -709,6 +709,13 @@
     const allChars = window.WORDS.getWords(null).length + importedAll.length
     const importedHere = importedAll.filter(w => (w.lo || 999) <= window.WORDS.loOf(cu, clFixed)).length
     const coveredChars = window.WORDS.getCoveredWords(cu, clFixed).length + importedHere
+    // 识字连实际出题范围（当课只出当课的字；单元最后一课=整单元随机）
+    const ulsP = window.WORDS.getUnitLessons(cu)
+    const isUnitEndP = !!(ulsP.length && String(ulsP[ulsP.length - 1].lesson) === String(clFixed))
+    const shiziScopeChars = window.WORDS.CHARS.filter(e => e.unit === cu && (isUnitEndP ? true : String(e.lesson) === String(clFixed)))
+    const importedShizi = importedAll.filter(w => Number(w.unit) === cu && (isUnitEndP ? true : String(w.lesson) === String(clFixed)))
+    const shiziTotal = shiziScopeChars.length + importedShizi.length
+    const shiziShow = isUnitEndP ? Math.min(20, shiziTotal) : shiziTotal
     const cnScope = `
       <div class="scope-card">
         <div class="sc-head">🔭 侦察连·阅读</div>
@@ -718,9 +725,9 @@
       </div>
       <div class="scope-card">
         <div class="sc-head">📖 识字连</div>
-        <div class="sc-num">${coveredChars}<span class="sc-sub">/${allChars} 字</span></div>
-        <div class="sc-bar"><div class="sc-fill" style="width:${pct(coveredChars, allChars)}%"></div></div>
-        <div class="sc-note">生字范围：第1课 ~ ${lessonLabel(clFixed)}《${lessonName}》，共 ${coveredChars} 字 · 随机抽15字不超纲</div>
+        <div class="sc-num">${shiziShow}<span class="sc-sub">/${shiziTotal} 字</span></div>
+        <div class="sc-bar"><div class="sc-fill" style="width:${pct(shiziShow, shiziTotal)}%"></div></div>
+        <div class="sc-note">${isUnitEndP ? ('单元已学完：整单元随机复习（共 ' + shiziTotal + ' 字）') : ('只练当课生字：' + lessonLabel(clFixed) + '《' + lessonName + '》共 ' + shiziTotal + ' 字')}</div>
       </div>
       <div class="scope-card">
         <div class="sc-head">📝 特训连</div>
@@ -752,7 +759,7 @@
       mathCard('🎒', '后勤连·实践', LOG_TIERS, lu)
 
     return `<div class="progress-box">
-      <div class="progress-tip">设置「<b>当前单元 + 当前课文</b>」后：<b>识字连</b>从第1课到该课所有生字随机抽15字（<b>不超纲</b>）；<b>侦察连·阅读</b>按已学单元解锁；<b>特训连</b>按周几轮换专项、从<b>全量题库</b>出题。数学连队按<b>军衔/训练天数</b>解锁。</div>
+      <div class="progress-tip">设置「<b>当前单元 + 当前课文</b>」后：<b>识字连</b>平时只出<b>当课学的字</b>（不混入其他课文）；当学到单元最后一课（语文园地）即单元学完时，改为<b>整单元随机复习</b>。<b>侦察连·阅读</b>按已学单元解锁；<b>特训连</b>按周几轮换专项、从<b>全量题库</b>出题。数学连队按<b>军衔/训练天数</b>解锁。</div>
       <div class="progress-sum">当前学到：第${cu}单元 · ${lessonLabel(clFixed)}《${lessonName}》<br><span class="progress-range">生字范围：第1课 ~ ${lessonLabel(clFixed)}，共 ${coveredChars} 字</span></div>
       <div class="scope-sec"><div class="scope-title">🎚 学习进度</div>${sel}</div>
       <div class="scope-sec"><div class="scope-title">📚 阅读·语文 出题范围（随进度变化）</div><div class="scope-grid">${cnScope}</div></div>
