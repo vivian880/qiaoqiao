@@ -1025,10 +1025,10 @@
 
   // ---------- 启动 ----------
   function maybeGreet() {
-    const g = localStorage.getItem('qiaoqiao_greet')
+    const g = window.SafeLS.getItem('qiaoqiao_greet')
     const t = Store.todayStr()
     if (g !== t && Store.getTodayKeys().some(k => !Store.isPassed(k))) {
-      localStorage.setItem('qiaoqiao_greet', t)
+      window.SafeLS.setItem('qiaoqiao_greet', t)
       setTimeout(() => toast('邱少云，樱桃等你来训练哦！'), 400)
     }
   }

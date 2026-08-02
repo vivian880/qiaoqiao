@@ -1,5 +1,18 @@
 // 本地存储层（localStorage，无云依赖）
 window.Store = (function () {
+  // 安全存储：iPad Safari 以 file:// 打开本地单文件时可能禁止访问 localStorage，
+  // 此时自动用内存兜底，避免初始化崩溃（表现就是只剩绿色背景的「绿屏」）。
+  // 桌面/正常网页环境检测到 localStorage 可用时，仍走真实 localStorage 持久化。
+  window.SafeLS = (function () {
+    const mem = {}
+    let ok = true
+    try { const k = '__qiaoqiao_probe__'; localStorage.setItem(k, '1'); localStorage.removeItem(k) } catch (e) { ok = false }
+    return {
+      getItem(k) { try { if (ok) return localStorage.getItem(k) } catch (e) {} return (k in mem) ? mem[k] : null },
+      setItem(k, v) { mem[k] = String(v); if (ok) { try { localStorage.setItem(k, String(v)) } catch (e) {} } },
+      removeItem(k) { delete mem[k]; if (ok) { try { localStorage.removeItem(k) } catch (e) {} } }
+    }
+  })()
   const KEY = 'qiaoqiao_user_v2'
   const WKEY = 'qiaoqiao_words_v2'
   const AKEY = 'qiaoqiao_articles_v2'
@@ -113,7 +126,7 @@ window.Store = (function () {
   const STREAK_BASICS = ['artillery', 'rifle', 'intel_words']
 
   function load() {
-    const raw = localStorage.getItem(KEY)
+    const raw = window.SafeLS.getItem(KEY)
     if (raw) {
       try { user = Object.assign(defaultUser(), JSON.parse(raw)) }
       catch (e) { user = defaultUser() }
@@ -143,13 +156,13 @@ window.Store = (function () {
     // 首次使用日期（周数基准：首次打开=第1周）
     if (!user.firstUseDate) { user.firstUseDate = todayStr(); save() }
     // 文章库覆盖
-    const a = localStorage.getItem(AKEY)
+    const a = window.SafeLS.getItem(AKEY)
     if (a) { try { window.ARTICLES = JSON.parse(a) } catch (e) {} }
     resetDailyIfNeeded()
   }
-  function save() { localStorage.setItem(KEY, JSON.stringify(user)) }
-  function saveWords() { localStorage.setItem(WKEY, JSON.stringify(window.WORDS.units)) }
-  function saveArticles() { localStorage.setItem(AKEY, JSON.stringify(window.ARTICLES)) }
+  function save() { window.SafeLS.setItem(KEY, JSON.stringify(user)) }
+  function saveWords() { window.SafeLS.setItem(WKEY, JSON.stringify(window.WORDS.units)) }
+  function saveArticles() { window.SafeLS.setItem(AKEY, JSON.stringify(window.ARTICLES)) }
 
   function yesterdayStr() {
     const d = new Date()

@@ -368,9 +368,9 @@
   //   整库出完一轮后自动重新打乱，从头再来。状态存 localStorage。
   const RKEY = 'qiaoqiao_rotation_v1'
   function loadRot() {
-    try { return JSON.parse(localStorage.getItem(RKEY)) || {} } catch (e) { return {} }
+    try { return JSON.parse(window.SafeLS.getItem(RKEY)) || {} } catch (e) { return {} }
   }
-  function saveRot(r) { try { localStorage.setItem(RKEY, JSON.stringify(r)) } catch (e) {} }
+  function saveRot(r) { try { window.SafeLS.setItem(RKEY, JSON.stringify(r)) } catch (e) {} }
   function seqOf(n) { const a = []; for (let i = 0; i < n; i++) a.push(i); return a }
   // 从名为 name、大小为 size 的题库轮换取 n 个下标（同一次抽取内不重复）
   function draw(name, size, n) {
