@@ -427,7 +427,13 @@
   // 从某个专项集合走轮换池抽 n 题
   function zhuantiDraw(lib, key, n, kind) {
     if (!lib || !lib.length) return []
-    return draw(key, lib.length, n).map(i => zhuantiQuestion(lib[i], kind))
+    // 应用家长覆盖层：隐藏的题过滤掉、家长新增题追加进来
+    let eff = lib
+    if (window.Store && window.Store.applyZhuantiOverride && kind) {
+      eff = window.Store.applyZhuantiOverride(kind, lib)
+    }
+    if (!eff.length) return []
+    return draw(key, eff.length, n).map(i => zhuantiQuestion(eff[i], kind))
   }
   function mixedZhuanti(n) {
     // 周末混合挑战(周六/日)：同音(1发音+1填空) + 多音2 + 前后鼻2 + 形近2(填空) + 平翘舌2（n=10）

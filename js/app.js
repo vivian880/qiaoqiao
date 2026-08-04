@@ -3,13 +3,13 @@
   const TASKS = {
     scout: { key: 'scout', name: '侦察连·阅读', icon: '🔭', desc: '读短文答3题 · 革命/爱国题材优先' },
     artillery: { key: 'artillery', name: '炮兵连·乘除法', icon: '💣', desc: '九九乘除法 · 10题' },
-    intel_words: { key: 'intel_words', name: '识字连', icon: '📖', desc: '当课生字 · 全对通关' },
-    intel_special: { key: 'intel_special', name: '特训连', icon: '📝', desc: '拼音专项10题 · 全对通关' },
+    intel_words: { key: 'intel_words', name: '识字连', icon: '📖', desc: '当课生字 · 90%通关' },
+    intel_special: { key: 'intel_special', name: '特训连', icon: '📝', desc: '拼音专项10题 · 90%通关' },
     rifle: { key: 'rifle', name: '步枪连·加减法', icon: '🔫', desc: '100以内加减法 · 10题' },
     logistics: { key: 'logistics', name: '后勤连·综合实践', icon: '🎒', desc: '长度/方向/钟表' }
   }
   // 特训连轮换：周一同音字 / 周二多音字 / 周三前后鼻音 / 周四形近字 / 周五混合挑战（周末无此任务）
-  const INTEL_SPECIAL_DESC = { 1: '同音字10题 · 全对通关', 2: '多音字10题 · 全对通关', 3: '前后鼻音10题 · 全对通关', 4: '形近字10题 · 全对通关', 5: '混合挑战10题 · 全对通关', 6: '混合挑战10题', 0: '混合挑战10题' }
+  const INTEL_SPECIAL_DESC = { 1: '同音字10题 · 90%通关', 2: '多音字10题 · 90%通关', 3: '前后鼻音10题 · 90%通关', 4: '形近字10题 · 90%通关', 5: '混合挑战10题 · 90%通关', 6: '混合挑战10题', 0: '混合挑战10题' }
   // 每项任务的通关奖励：基础任务 +8 / 突击挑战 +10
   function bulletsFor(key) { return Store.isAssault(key) ? 10 : 8 }
   // 游玩小建议
@@ -28,7 +28,7 @@
     '⚠️ 子弹不够时按钮会变灰，去做任务赚子弹吧！'
 
   const app = document.getElementById('app')
-  let state = { view: 'home', quiz: null, shopTab: 'feed', admin: { tab: 'words', unit: 1, editArticle: -1, editWord: -1, importOpen: false, importUnit: 1 }, greetShown: false, rankUpPending: null }
+  let state = { view: 'home', quiz: null, shopTab: 'feed', admin: { tab: 'words', unit: 1, editArticle: -1, editWord: -1, importOpen: false, importUnit: 1, zhuantiLib: 'xjf' }, greetShown: false, rankUpPending: null }
 
   // ---------- 工具 ----------
   function rubyfy(s) {
@@ -40,6 +40,20 @@
     return String(s).replace(/([一-龥])\(([^)]+)\)/g, '<span class="py-cell"><span class="py">$2</span><span class="hz">$1</span></span>')
   }
   function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])) }
+  function copyToClipboard(text) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(() => fallbackCopy(text))
+      } else fallbackCopy(text)
+    } catch (e) { fallbackCopy(text) }
+  }
+  function fallbackCopy(text) {
+    const ta = document.createElement('textarea')
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'
+    document.body.appendChild(ta); ta.select()
+    try { document.execCommand('copy') } catch (e) {}
+    ta.remove()
+  }
   function shuffle(a) { const x = a.slice(); for (let i = x.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = x[i]; x[i] = x[j]; x[j] = t } return x }
   function stars(n, total) {
     const got = Math.round(n / total * 5)
@@ -47,13 +61,14 @@
     for (let i = 0; i < 5; i++) s += i < got ? '★' : '☆'
     return s
   }
-  // 通关所需正确题数：按家长定的达标线执行「全对制」
-  // 侦察3/3、炮兵10/10、情报30/30（认读20+专项10）、步枪10/10、后勤10/10
+  // 通关所需正确题数：家长定的达标线 = 正确率 ≥ 90%（向上取整）
+  // 例：10 题需 9 对、3 题需 3 对、15 题需 14 对、20 题需 18 对。
   // 没通关每天有3次重练机会（每次都是新题）
   function passFor(total) {
-    return total
+    if (total <= 0) return 0
+    return Math.ceil(total * 0.9)
   }
-  // 所有任务均为全对制：答对题数须达到通关线（含识字连的认读+复习题，与其他连队一致）
+  // 所有任务：正确率达到 90%（向上取整）即通关（含识字连认读+复习题，与其他连队一致）
   function quizPassed(q) {
     if (q.total === 0) return false       // 防护：空题库不应自动通关发奖
     return q.correctCount >= passFor(q.total)
@@ -231,6 +246,28 @@
     document.body.appendChild(mask)
   }
 
+  // 独立错题复习：从错题库随机抽 n 道（n<=0 表示全部），不计入通关/奖励
+  function startReview(n) {
+    const wb = Store.getWrongBank()
+    if (!wb.length) { toast('错题库还是空的，先去闯关积累吧'); return }
+    const pool = shuffle(wb.slice())
+    const picked = (n && n > 0) ? pool.slice(0, Math.min(n, pool.length)) : pool
+    const questions = picked.map(w => ({
+      char: w.char || '', word: w.word || '', text: w.text, options: (w.options || []).slice(),
+      answer: w.answer, _reviewKey: w.key, _fromWrong: true
+    })).filter(q => q.text && Array.isArray(q.options) && q.options.length >= 2 && typeof q.answer === 'number')
+    if (!questions.length) { toast('没有可复习的错题'); return }
+    const total = questions.length
+    state.quiz = {
+      key: '__review__', meta: { icon: '📕', name: '错题复习' }, questions, article: null, mode: '错题复习',
+      total, normalTotal: total, cur: 0, selected: -1, answered: false, correctCount: 0,
+      readingTotal: 0, readingCorrect: 0, reviewCount: 0,
+      wrongSel: -1, wrongLogged: false, attempts: 0, finalWrong: false,
+      phase: 'quiz', review: true, wrongList: [], allDone: false
+    }
+    renderQuiz()
+  }
+
   // ---------- 渲染：答题 ----------
   function startQuiz(key) {
     const u = Store.getUser()
@@ -305,7 +342,7 @@
         <div class="result card">
           <div class="result-emoji">${passed ? '🎖' : '💪'}</div>
           <div class="result-title">${q.review ? '复习完成！' : (passed ? '任务完成！' : '再练一次！')}</div>
-          <div class="result-score">答对 <span class="big-num">${q.correctCount}</span> / ${q.total} 题</div>
+          <div class="result-score">答对 <span class="big-num">${q.correctCount}</span> / ${q.total} 题${q.review ? '' : '　<span class="pass-line">通关需对 ' + passFor(q.total) + ' 题（90%）</span>'}</div>
           <div class="result-stars">${stars(q.correctCount, q.total)}</div>
           <div class="result-bar"><div class="result-bar-fill" style="width:${pct}%"></div></div>
           ${q.review ? '<div class="result-reward">复习模式不重复发奖励</div>' : (passed ? '<div class="result-reward">' + (q.allDone ? ('🎉 今日全部通关！子弹 +' + bulletsFor(q.key) + (q.fullInc ? ' · 樱桃饱腹补满至 80%（喂战备粮可到 100%）' : ' · 樱桃已吃饱💯')) : ('🔸 子弹 +' + bulletsFor(q.key) + ' · 完成全部任务再喂饱樱桃')) + '</div>' : (q.key === 'intel_words' ? '<div class="result-reward">识字连要全部答对才算通关，换一批新题再冲！</div>' : '<div class="result-reward">差一点点，换一批新题再冲！</div>'))}
@@ -373,18 +410,21 @@
       if (item._reviewKey) Store.removeWrong(item._reviewKey)   // 复习错题答对 → 移出错题库
       renderQuiz()
       setTimeout(advance, 750)
-    } else {
-      // 答错 → 仅给 1 次重试机会（每题共 2 次）；第 2 次仍错则锁定为错、展示正确答案后进入下一题
-      q.attempts = (q.attempts || 0) + 1
-      q.wrongSel = i
-      if (!q.wrongLogged) {
-        Store.addWrong({ task: q.key, char: item.char || '', word: item.word || '', text: item.text, options: item.options.slice(), answer: item.answer })
-        q.wrongList.push({ text: item.text, your: item.options[i], correct: item.options[item.answer] })
-        q.wrongLogged = true
-      }
-      if (q.attempts >= 2) {
-        q.finalWrong = true
-        q.answered = true      // 锁定（未答对）
+      } else {
+        // 答错 → 仅给 1 次重试机会（每题共 2 次）；第 2 次仍错则锁定为错、展示正确答案后进入下一题
+        q.attempts = (q.attempts || 0) + 1
+        q.wrongSel = i
+        if (!q.wrongLogged) {
+          // 独立错题复习(__review__)不把错题重新写回错题库（已是错题、保留原 task 分类）；闯关答错才记录
+          if (q.key !== '__review__') {
+            Store.addWrong({ task: q.key, char: item.char || '', word: item.word || '', text: item.text, options: item.options.slice(), answer: item.answer })
+          }
+          q.wrongList.push({ text: item.text, your: item.options[i], correct: item.options[item.answer] })
+          q.wrongLogged = true
+        }
+        if (q.attempts >= 2) {
+          q.finalWrong = true
+          q.answered = true      // 锁定（未答对）
         q.selected = -1
         renderQuiz()
         setTimeout(advance, 1200)
@@ -557,7 +597,7 @@
   // ---------- 渲染：首长指挥部 ----------
   function renderAdmin() {
     const u = Store.getUser()
-    const tabs = [['words', '生字管理'], ['articles', '文章管理'], ['report', '学习报告'], ['progress', '学习进度'], ['score', '积分调整'], ['wrong', '错题库']]
+    const tabs = [['words', '生字管理'], ['articles', '文章管理'], ['report', '学习报告'], ['progress', '学习进度'], ['score', '积分调整'], ['zhuanti', '特训连题库'], ['wrong', '错题库']]
     let html = `<div class="quiz-head"><div class="quiz-back" data-action="go-home">← 营地</div><span class="quiz-title">🪖 首长指挥部</span><span class="quiz-progress"><span class="pw-btn" data-action="admin-pw">🔑 改密码</span></span></div>`
     html += '<div class="admin-tabs">'
     tabs.forEach(t => html += `<div class="admin-tab ${state.admin.tab === t[0] ? 'on' : ''}" data-action="admin-tab" data-tab="${t[0]}">${t[1]}</div>`)
@@ -567,6 +607,7 @@
     else if (state.admin.tab === 'report') html += adminReport()
     else if (state.admin.tab === 'progress') html += adminProgress()
     else if (state.admin.tab === 'score') html += adminScore()
+    else if (state.admin.tab === 'zhuanti') html += adminZhuanti()
     else if (state.admin.tab === 'wrong') html += adminWrong()
     html += '</div>'
     app.innerHTML = html
@@ -792,6 +833,38 @@
     </div>`
   }
 
+  function adminZhuanti() {
+    const libs = Store.ZHUANTI_LIBS
+    const cur = state.admin.zhuantiLib || 'xjf'
+    const view = Store.getZhuantiView(cur)
+    const libOpts = Object.keys(libs).map(k => `<option value="${k}" ${k === cur ? 'selected' : ''}>${libs[k].name}</option>`).join('')
+    const rows = view.items.map((it, idx) => {
+      const optStr = it.opts.map(o => esc(o)).join(' / ')
+      const delBtn = it.addedIdx >= 0
+        ? `<button class="mini-btn del" data-action="zt-del-added" data-lib="${cur}" data-idx="${it.addedIdx}">🗑 删</button>`
+        : `<button class="mini-btn del" data-action="zt-hide" data-lib="${cur}" data-id="${it.id}">🚫 隐藏</button>`
+      return `<div class="zt-row"><span class="zt-q">${esc(it.text)}</span><span class="zt-o">${optStr}</span>${delBtn}</div>`
+    }).join('')
+    const sample = cur === 'xjf' || cur === 'tyf'
+      ? '例：{"id":"XJF99","prompt":"房（ ）","options":["间","问","闲"],"answer":0}'
+      : '例：{"id":"TY099","char":"坐","options":["zuò","zhuò","zòu"],"answer":0}'
+    return `<div class="zt-box">
+      <div class="zt-tip">📝 这里管理「特训连」各专项题库。点「隐藏」可暂时下架某题（不删原库，可恢复）；「导入」可新增题目（粘贴 JSON，每行一条或整组数组）。</div>
+      <div class="zt-toolbar">
+        <label>专项：<select data-action="zt-lib">${libOpts}</select></label>
+        <button class="add-btn" data-action="zt-export" data-lib="${cur}">⬇️ 导出当前库</button>
+        <button class="add-btn" data-action="zt-show-hidden" data-lib="${cur}">👁 看已隐藏</button>
+      </div>
+      <div class="zt-list">${rows || '<div class="wrongbank-empty">（空）</div>'}</div>
+      <div class="zt-import">
+        <div class="zt-import-title">➕ 导入新题（${esc(sample)}）</div>
+        <textarea class="zt-textarea" data-role="zt-import-text" placeholder="粘贴 JSON，每行一条对象，或一个数组"></textarea>
+        <button class="add-btn" data-action="zt-import" data-lib="${cur}">导入到「${libs[cur].name}」</button>
+        <span class="zt-import-msg" data-role="zt-import-msg"></span>
+      </div>
+    </div>`
+  }
+
   function adminWrong() {
     const wb = Store.getWrongBank()
     if (!wb.length) return '<div class="wrongbank-empty">📭 暂无错题记录</div>'
@@ -804,7 +877,11 @@
     return `<div class="wrongbank-box">
       <div class="wrongbank-tip">错题会在第二天对应科目里再出一轮；答对后自动移出。</div>
       ${rows}
-      <button class="add-btn" data-action="wrong-clear">🧹 清空错题库</button>
+      <div class="wrongbank-actions">
+        <button class="add-btn" data-action="wrong-review-10">📕 随机复习（10题）</button>
+        <button class="add-btn" data-action="wrong-review-all">📚 随机复习（全部）</button>
+        <button class="add-btn danger" data-action="wrong-clear">🧹 清空错题库</button>
+      </div>
     </div>`
   }
 
@@ -966,6 +1043,57 @@
         }
         case 'admin-pw': changePw(); break
         case 'wrong-clear': Store.clearWrong(); renderAdmin(); break
+        case 'wrong-review-10': startReview(10); break
+        case 'wrong-review-all': startReview(0); break
+        case 'zt-lib': state.admin.zhuantiLib = d.lib; renderAdmin(); break
+        case 'zt-hide': {
+          Store.hideZhuantiItem(d.lib, d.id); toast('已隐藏：' + d.id); renderAdmin(); break
+        }
+        case 'zt-del-added': {
+          Store.removeZhuantiAdded(d.lib, parseInt(d.idx)); toast('已删除导入题'); renderAdmin(); break
+        }
+        case 'zt-show-hidden': {
+          const hidden = (Store.getUser().zhuantiHidden && Store.getUser().zhuantiHidden[d.lib]) || []
+          if (!hidden.length) { toast('没有已隐藏的题'); break }
+          const restored = hidden.slice()
+          restored.forEach(id => Store.restoreZhuantiItem(d.lib, id))
+          toast('已恢复 ' + restored.length + ' 道隐藏题'); renderAdmin(); break
+        }
+        case 'zt-export': {
+          const meta = Store.ZHUANTI_LIBS[d.lib]
+          const src = window[meta.lib] || []
+          const hidden = (Store.getUser().zhuantiHidden && Store.getUser().zhuantiHidden[d.lib]) || []
+          const added = (Store.getUser().zhuantiAdded && Store.getUser().zhuantiAdded[d.lib]) || []
+          const exp = src.filter(x => !hidden.includes(x.id)).concat(added)
+          copyToClipboard(JSON.stringify(exp, null, 2))
+          toast('已复制「' + meta.name + '」共 ' + exp.length + ' 题到剪贴板')
+          break
+        }
+        case 'zt-import': {
+          const ta = document.querySelector('[data-role="zt-import-text"]')
+          const msg = document.querySelector('[data-role="zt-import-msg"]')
+          const raw = ta ? ta.value.trim() : ''
+          if (!raw) { if (msg) msg.textContent = '请先粘贴 JSON'; break }
+          let arr
+          try {
+            const fixed = raw.indexOf('[') === 0 ? raw : '[' + raw.split('\n').map(s => s.trim()).filter(Boolean).join(',') + ']'
+            arr = JSON.parse(fixed)
+          } catch (e) { if (msg) msg.textContent = 'JSON 解析失败：' + e.message; break }
+          if (!Array.isArray(arr)) { if (msg) msg.textContent = '需为对象数组'; break }
+          let okN = 0
+          arr.forEach(o => {
+            if (!o || !Array.isArray(o.options) || o.options.length < 2 || typeof o.answer !== 'number') return
+            const item = {
+              id: o.id || ('add_' + d.lib + '_' + Date.now() + '_' + okN),
+              char: o.char || '', word: o.word || '', prompt: o.prompt || '',
+              options: o.options.map(String), answer: o.answer
+            }
+            Store.addZhuantiItem(d.lib, item); okN++
+          })
+          if (msg) msg.textContent = okN ? ('成功导入 ' + okN + ' 题 ✓') : '没有有效题目（需含 options 数组与 answer 数字）'
+          if (okN) renderAdmin()
+          break
+        }
         case 'import-word-open': state.admin.importOpen = true; renderAdmin(); break
         case 'import-word-cancel': state.admin.importOpen = false; renderAdmin(); break
         case 'import-word-save': {
@@ -1005,6 +1133,8 @@
         state.admin.wLesson = el.value; renderAdmin()
       } else if (el.dataset.action === 'iw-unit') {
         state.admin.importUnit = parseInt(el.value) || 1; renderAdmin()
+      } else if (el.dataset.action === 'zt-lib') {
+        state.admin.zhuantiLib = el.value; renderAdmin()
       }
     })
   }

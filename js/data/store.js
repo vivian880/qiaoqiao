@@ -80,6 +80,8 @@ window.Store = (function () {
       dataVersion: DATA_VERSION,
       wrongBank: [],
       importedWords: [],
+      zhuantiHidden: {},
+      zhuantiAdded: {},
       history: []
     }
   }
@@ -441,6 +443,71 @@ window.Store = (function () {
   function getUser() { return user }
   function getRankInfo() { return window.RANK.getRank(user.totalDays) }
 
+  // ---- 特训连题库覆盖层（家长可删题/加题，持久化；原 zhuanti.js 全局题库不变） ----
+  // 类型与 zhuanti.js 全局数组的对应关系
+  const ZHUANTI_LIBS = {
+    ty:  { name: '同音字', lib: 'TongYinZi' },
+    tyf: { name: '同音字填空', lib: 'TongYinFill' },
+    dy:  { name: '多音字', lib: 'DuoYinZi' },
+    hb:  { name: '前后鼻音', lib: 'HunYin' },
+    xjf: { name: '形近字填空', lib: 'XingJinFill' },
+    pq:  { name: '平翘舌', lib: 'PingQiaoShe' }
+  }
+  function getZhuantiHidden() { return user.zhuantiHidden || (user.zhuantiHidden = {}) }
+  function getZhuantiAdded() { return user.zhuantiAdded || (user.zhuantiAdded = {}) }
+  function hideZhuantiItem(lib, id) {
+    const h = getZhuantiHidden()
+    if (!h[lib]) h[lib] = []
+    if (!h[lib].includes(id)) { h[lib].push(id); save() }
+  }
+  function restoreZhuantiItem(lib, id) {
+    const h = getZhuantiHidden()
+    if (!h[lib]) return
+    const i = h[lib].indexOf(id)
+    if (i >= 0) { h[lib].splice(i, 1); save() }
+  }
+  function addZhuantiItem(lib, item) {
+    const a = getZhuantiAdded()
+    if (!a[lib]) a[lib] = []
+    a[lib].push(item); save()
+  }
+  function removeZhuantiAdded(lib, idx) {
+    const a = getZhuantiAdded()
+    if (!a[lib] || !a[lib][idx]) return
+    a[lib].splice(idx, 1); save()
+  }
+  function getZhuantiView(lib) {
+    // 返回 {name, items:[{id, text, opts, hidden, addedIdx}]}
+    const meta = ZHUANTI_LIBS[lib]
+    if (!meta) return null
+    const src = window[meta.lib] || []
+    const hidden = (user.zhuantiHidden && user.zhuantiHidden[lib]) || []
+    const added = (user.zhuantiAdded && user.zhuantiAdded[lib]) || []
+    const items = src.map(it => ({
+      id: it.id, hidden: hidden.includes(it.id),
+      text: zhuantiDisplay(it), opts: (it.options || []).map(o => String(o)), addedIdx: -1
+    })).filter(it => !it.hidden)
+    added.forEach((it, i) => items.push({
+      id: it.id || ('add_' + lib + '_' + i), hidden: false,
+      text: zhuantiDisplay(it), opts: (it.options || []).map(o => String(o)), addedIdx: i
+    }))
+    return { name: meta.name, items }
+  }
+  function zhuantiDisplay(it) {
+    if (it.prompt) return it.prompt
+    if (it.char && it.options && it.options.length) return it.char + ' 读音'
+    if (it.word) return it.char + ' · ' + it.word
+    return it.char || it.id || '(空)'
+  }
+  // 抽题时由 questions.js 调用：过滤掉被隐藏的、并追加家长新增题
+  function applyZhuantiOverride(lib, arr) {
+    const hidden = (user.zhuantiHidden && user.zhuantiHidden[lib]) || []
+    let out = arr.filter(x => !x || !x.id || !hidden.includes(x.id))
+    const added = (user.zhuantiAdded && user.zhuantiAdded[lib]) || []
+    added.forEach(a => out.push(a))
+    return out
+  }
+
   // ---- 错题库（答错后记录，第二天对应科目再出一轮；答对即移出） ----
   function wrongKey(task, text, answer) { return task + '|' + text + '|' + answer }
   function addWrong(q) {
@@ -463,6 +530,8 @@ window.Store = (function () {
     getImportedWords, addImportedWord, clearImportedWords,
     getArticles, saveArticle, deleteArticle,
     addHistory, getReport, stageName,
-    addWrong, getWrongBank, removeWrong, clearWrong
+    addWrong, getWrongBank, removeWrong, clearWrong,
+    ZHUANTI_LIBS, getZhuantiView, hideZhuantiItem, restoreZhuantiItem,
+    addZhuantiItem, removeZhuantiAdded, applyZhuantiOverride
   }
 })()
