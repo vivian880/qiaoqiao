@@ -388,7 +388,7 @@ window.XingJinFill = [
   {"id":"XJF21","prompt":"（ ）地","options":["田","由","甲"],"answer":0},
   {"id":"XJF22","prompt":"理（ ）","options":["由","田","甲"],"answer":0},
   {"id":"XJF23","prompt":"（ ）题","options":["问","间","闲"],"answer":0},
-  {"id":"XJF24","prompt":"（ ）房","options":["间","问","闲"],"answer":0},
+  {"id":"XJF24","prompt":"房（ ）","options":["间","问","闲"],"answer":0},
   {"id":"XJF25","prompt":"（ ）饭","options":["早","草","旱"],"answer":0},
   {"id":"XJF26","prompt":"（ ）地","options":["草","早","旱"],"answer":0},
   {"id":"XJF27","prompt":"我（ ）","options":["们","门","问"],"answer":0},
