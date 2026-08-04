@@ -204,7 +204,7 @@
       <button class="big-btn btn-pink shop-btn" data-action="go-shop">🎒 营地物资站</button>
       <div class="play-tip-entry" data-action="show-tip">💡 游玩小建议</div>
       <div class="foot-tip">学习数据存在本机浏览器 · 换设备不互通</div>
-      <div class="ver-tip">离线版 v82</div>
+      <div class="ver-tip">离线版 v83</div>
     `
     // 升级军衔后返回营地：邱少云敬礼（台词 toast 已在结算时弹出）
     if (state.rankUpPending) {
@@ -789,9 +789,6 @@
     const ART_U = [1, 2, 3, 5, 6, 6]
     const RIF_TIERS = ['不进位', '进位', '退位', '填空', '比大小', '连加连减', '两步应用']
     const RIF_U = [1, 3, 5, 6, 7, 7]
-    const LOG_TIERS = ['长度', '方向', '钟表']
-    const LOG_U = [1, 2, 3, 3, 3]
-    const au = ART_U[rk.level], ru = RIF_U[rk.level], lu = LOG_U[rk.practice]
     const mathCard = (icon, name, tiers, unlocked) => {
       const chips = tiers.map((t, i) => `<span class="tier ${i < unlocked ? 'on' : 'off'}">${t}</span>`).join('')
       return `<div class="scope-card">
@@ -802,8 +799,7 @@
       </div>`
     }
     const mathCards = mathCard('💣', '炮兵连·乘除法', ART_TIERS, au) +
-      mathCard('🔫', '步枪连·加减法', RIF_TIERS, ru) +
-      mathCard('🎒', '后勤连·实践', LOG_TIERS, lu)
+      mathCard('🔫', '步枪连·加减法', RIF_TIERS, ru)
 
     return `<div class="progress-box">
       <div class="progress-tip">设置「<b>当前单元 + 当前课文</b>」后：<b>识字连</b>平时只出<b>当课学的字</b>（不混入其他课文）；当学到单元最后一课（语文园地）即单元学完时，改为<b>整单元随机复习</b>。<b>侦察连·阅读</b>按已学单元解锁；<b>特训连</b>按周几轮换专项、从<b>全量题库</b>出题。数学连队按<b>军衔/训练天数</b>解锁。</div>

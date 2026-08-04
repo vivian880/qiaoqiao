@@ -110,18 +110,18 @@ window.Store = (function () {
     return Math.max(1, diff + 1)
   }
   // 每日任务清单（按日期自动显示/隐藏，不显示未开放任务）：
-  //   周一~周五：炮兵连 / 识字连 / 特训连 / 步枪连（+第13周起 后勤连）
-  //   周六：侦察连·阅读 / 炮兵连 / 识字连 / 步枪连（+第13周起 后勤连）
+  //   周一~周五：炮兵连 / 识字连 / 特训连 / 步枪连
+  //   周六：侦察连·阅读 / 炮兵连 / 识字连 / 步枪连
   //   周日：侦察连·阅读 / 炮兵连 / 识字连 / 步枪连
-  //   侦察连·阅读＝突击挑战任务（仅周末）；后勤连第 13 周起开放（周日不显示）
+  //   侦察连·阅读＝突击挑战任务（仅周末）。
+  //   注：后勤连·综合实践 仅作为家长后台「后勤连题库」管理功能存在，
+  //   不作为儿童的今日作战任务出现在首页（2026-08-05 起取消第13周解锁逻辑）。
   function getTodayKeys() {
     const d = getWeekday()
-    const wk = getWeekNumber()
     let keys
     if (d === 0) keys = ['scout', 'artillery', 'intel_words', 'rifle', 'intel_special']
-    else if (d === 6) keys = ['scout', 'artillery', 'intel_words', 'rifle', 'logistics', 'intel_special']
-    else keys = ['artillery', 'intel_words', 'intel_special', 'rifle', 'logistics']
-    if (wk < 13) keys = keys.filter(k => k !== 'logistics')
+    else if (d === 6) keys = ['scout', 'artillery', 'intel_words', 'rifle', 'intel_special']
+    else keys = ['artillery', 'intel_words', 'intel_special', 'rifle']
     return keys
   }
   // 突击挑战任务（+10子弹）；其余为基础任务（+8子弹）
