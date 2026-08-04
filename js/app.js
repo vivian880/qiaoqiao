@@ -204,7 +204,7 @@
       <button class="big-btn btn-pink shop-btn" data-action="go-shop">🎒 营地物资站</button>
       <div class="play-tip-entry" data-action="show-tip">💡 游玩小建议</div>
       <div class="foot-tip">学习数据存在本机浏览器 · 换设备不互通</div>
-      <div class="ver-tip">离线版 v84</div>
+      <div class="ver-tip">离线版 v85</div>
     `
     // 升级军衔后返回营地：邱少云敬礼（台词 toast 已在结算时弹出）
     if (state.rankUpPending) {

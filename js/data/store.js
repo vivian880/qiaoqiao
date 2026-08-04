@@ -114,14 +114,14 @@ window.Store = (function () {
   //   周六：侦察连·阅读 / 炮兵连 / 识字连 / 步枪连
   //   周日：侦察连·阅读 / 炮兵连 / 识字连 / 步枪连
   //   侦察连·阅读＝突击挑战任务（仅周末）。
-  //   注：后勤连·综合实践 仅作为家长后台「后勤连题库」管理功能存在，
-  //   不作为儿童的今日作战任务出现在首页（2026-08-05 起取消第13周解锁逻辑）。
+  //   后勤连·综合实践：固定出现在周二、周四的首页（2026-08-05 用户要求）。
   function getTodayKeys() {
     const d = getWeekday()
     let keys
     if (d === 0) keys = ['scout', 'artillery', 'intel_words', 'rifle', 'intel_special']
     else if (d === 6) keys = ['scout', 'artillery', 'intel_words', 'rifle', 'intel_special']
     else keys = ['artillery', 'intel_words', 'intel_special', 'rifle']
+    if (d === 2 || d === 4) keys = keys.concat('logistics')
     return keys
   }
   // 突击挑战任务（+10子弹）；其余为基础任务（+8子弹）
