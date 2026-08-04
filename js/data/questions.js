@@ -289,18 +289,20 @@
       ['小朋友的身高大约是', '1米30厘米', ['1厘米30厘米', '13米', '130米']],
       ['一张床大约长', '2米', ['2厘米', '20厘米', '2千米']]
     ]
+    const lenQs = []
     for (let i = 0; i < 150; i++) {
       const t = lenBase[i % lenBase.length]
-      qs.push({ text: t[0], correct: t[1], others: t[2], _lv: 0 })
+      lenQs.push({ text: t[0], correct: t[1], others: t[2], _lv: 0 })
     }
     for (let i = 0; i < 150; i++) {
       const r = rng(2000 + i), mode = r.ri(0, 3)
-      if (mode === 0) qs.push({ text: '1米 = ? 厘米', correct: '100', others: ['10', '1000', '1'], _lv: 1 })
-      else if (mode === 1) { const n = r.ri(2, 9); qs.push({ text: `${n}米 = ? 厘米`, correct: String(n * 100), others: [String(n * 10), String(n * 1000), String(n)], _lv: 1 }) }
-      else if (mode === 2) { const n = r.ri(2, 9); qs.push({ text: `${n}00厘米 = ? 米`, correct: String(n), others: [String(n * 10), String(n * 100), String(n + 1)], _lv: 1 }) }
-      else { const d = r.ri(1, 9) * 10; qs.push({ text: `1米 - ${d}厘米 = ? 厘米`, correct: String(100 - d), others: [String(100 - d + 10), String(d), String(100 - d - 10)], _lv: 1 }) }
+      if (mode === 0) lenQs.push({ text: '1米 = ? 厘米', correct: '100', others: ['10', '1000', '1'], _lv: 1 })
+      else if (mode === 1) { const n = r.ri(2, 9); lenQs.push({ text: `${n}米 = ? 厘米`, correct: String(n * 100), others: [String(n * 10), String(n * 1000), String(n)], _lv: 1 }) }
+      else if (mode === 2) { const n = r.ri(2, 9); lenQs.push({ text: `${n}00厘米 = ? 米`, correct: String(n), others: [String(n * 10), String(n * 100), String(n + 1)], _lv: 1 }) }
+      else { const d = r.ri(1, 9) * 10; lenQs.push({ text: `1米 - ${d}厘米 = ? 厘米`, correct: String(100 - d), others: [String(100 - d + 10), String(d), String(100 - d - 10)], _lv: 1 }) }
     }
     // 方向 250：基础125(lv0) + 进阶125(lv2)
+    const dirQs = []
     const dirBase = [
       ['太阳从哪个方向升起？', '东', ['西', '南', '北']],
       ['傍晚面对太阳落下的方向，前面是西，后面是？', '东', ['南', '北', '西']],
@@ -325,9 +327,10 @@
       ['“上北下南，左西右东”是用来看什么图的？', '平面图', ['风景图', '照片', '统计图']],
       ['从学校先向南走，再向东走，能到达学校的？', '东南方向', ['西北方向', '东北方向', '西南方向']]
     ]
-    for (let i = 0; i < 125; i++) { const t = dirBase[i % dirBase.length]; qs.push({ text: t[0], correct: t[1], others: t[2], _lv: 0 }) }
-    for (let i = 0; i < 125; i++) { const t = dirAdv[i % dirAdv.length]; qs.push({ text: t[0], correct: t[1], others: t[2], _lv: 2 }) }
+    for (let i = 0; i < 125; i++) { const t = dirBase[i % dirBase.length]; dirQs.push({ text: t[0], correct: t[1], others: t[2], _lv: 0 }) }
+    for (let i = 0; i < 125; i++) { const t = dirAdv[i % dirAdv.length]; dirQs.push({ text: t[0], correct: t[1], others: t[2], _lv: 2 }) }
     // 钟表 350：基础150(lv0) + 精确200(lv3)
+    const clockQs = []
     const clockBase = [
       ['中午12点吃饭，时针指向几？', '12', ['3', '6', '9']],
       ['晚上6点看动画片，时针指向几？', '6', ['12', '3', '9']],
@@ -352,13 +355,28 @@
       ['一刻钟是？', '15分', ['15秒', '30分', '10分']],
       ['时针过6，分针指向2，大约是？', '6:10', ['6:02', '6:50', '7:10']]
     ]
-    for (let i = 0; i < 150; i++) { const t = clockBase[i % clockBase.length]; qs.push({ text: t[0], correct: t[1], others: t[2], _lv: 0 }) }
-    for (let i = 0; i < 200; i++) { const t = clockAdv[i % clockAdv.length]; qs.push({ text: t[0], correct: t[1], others: t[2], _lv: 3 }) }
-    return qs
+    for (let i = 0; i < 150; i++) { const t = clockBase[i % clockBase.length]; clockQs.push({ text: t[0], correct: t[1], others: t[2], _lv: 0 }) }
+    for (let i = 0; i < 200; i++) { const t = clockAdv[i % clockAdv.length]; clockQs.push({ text: t[0], correct: t[1], others: t[2], _lv: 3 }) }
+    // 返回三个类别的中间题池（不在此时应用覆盖层；覆盖层在抽题时按类别应用，确保隐藏/新增即时生效）
+    return { len: lenQs, dir: dirQs, clock: clockQs }
   }
   function genLogistics(rank) {
     if (!_logCache) _logCache = buildLogistics()
-    return { questions: selectFrom(_logCache, 'logistics_' + rank.practice, 10, rank.practice) }
+    const apply = (cat, arr) => (window.Store && window.Store.applyLogisticsOverride ? window.Store.applyLogisticsOverride(cat, arr) : arr)
+    const pool = apply('len', _logCache.len).concat(apply('dir', _logCache.dir), apply('clock', _logCache.clock))
+    return { questions: selectFrom(pool, 'logistics_' + rank.practice, 10, rank.practice) }
+  }
+  // 供首长指挥部「后勤连题库」页读取某类别题池（已应用隐藏/新增）用于管理展示
+  // 家长新增题会带 __added 下标标记，便于管理页定位删除
+  function getLogisticsPool(cat) {
+    if (!_logCache) _logCache = buildLogistics()
+    const map = { len: _logCache.len, dir: _logCache.dir, clock: _logCache.clock }
+    const base = map[cat] || []
+    const hidden = (window.Store && window.Store.getUser().logisticsHidden && window.Store.getUser().logisticsHidden[cat]) || []
+    const added = (window.Store && window.Store.getUser().logisticsAdded && window.Store.getUser().logisticsAdded[cat]) || []
+    const out = base.filter(x => !hidden.includes(cat + '||' + x.text)).map(x => Object.assign({}, x))
+    added.forEach((a, i) => out.push(Object.assign({}, a, { __added: i })))
+    return out
   }
 
   // ---------- 情报处·语文特训 ----------
@@ -533,5 +551,5 @@
     return { questions: [] }
   }
 
-  window.QH = { generate, makeOptions, shuffle }
+  window.QH = { generate, makeOptions, shuffle, getLogisticsPool }
 })()

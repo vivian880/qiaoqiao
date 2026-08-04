@@ -82,6 +82,8 @@ window.Store = (function () {
       importedWords: [],
       zhuantiHidden: {},
       zhuantiAdded: {},
+      logisticsHidden: {},
+      logisticsAdded: {},
       history: []
     }
   }
@@ -508,6 +510,42 @@ window.Store = (function () {
     return out
   }
 
+  // ---- 后勤连·综合实践题库（家长可隐藏/新增/导出） ----
+  // 后勤题由 questions.js 程序化生成，没有稳定 id；这里用 派生id = 类别 + 题目文本 作为去重/隐藏键。
+  // 隐藏：按派生 id 记录；新增：额外题存在 logisticsAdded（按类别存放）。
+  function getLogisticsHidden() { return user.logisticsHidden || (user.logisticsHidden = {}) }
+  function getLogisticsAdded() { return user.logisticsAdded || (user.logisticsAdded = {}) }
+  function hideLogisticsItem(cat, id) {
+    const h = getLogisticsHidden()
+    if (!h[cat]) h[cat] = []
+    if (!h[cat].includes(id)) { h[cat].push(id); save() }
+  }
+  function restoreLogisticsItem(cat, id) {
+    const h = getLogisticsHidden()
+    if (!h[cat]) return
+    const i = h[cat].indexOf(id)
+    if (i >= 0) { h[cat].splice(i, 1); save() }
+  }
+  function addLogisticsItem(cat, item) {
+    const a = getLogisticsAdded()
+    if (!a[cat]) a[cat] = []
+    a[cat].push(item); save()
+  }
+  function removeLogisticsAdded(cat, idx) {
+    const a = getLogisticsAdded()
+    if (!a[cat] || !a[cat][idx]) return
+    a[cat].splice(idx, 1); save()
+  }
+  // 供 questions.js 抽题时调用：对某一类别的题数组，过滤被隐藏的、并追加家长新增题
+  // 参数 arr：该类别已 finalize 之前的中间题数组（含 text/correct/others/_lv 等）
+  function applyLogisticsOverride(cat, arr) {
+    const hidden = (user.logisticsHidden && user.logisticsHidden[cat]) || []
+    let out = arr.filter(x => !x || !x.text || !hidden.includes(cat + '||' + x.text))
+    const added = (user.logisticsAdded && user.logisticsAdded[cat]) || []
+    added.forEach(a => out.push(a))
+    return out
+  }
+
   // ---- 错题库（答错后记录，第二天对应科目再出一轮；答对即移出） ----
   function wrongKey(task, text, answer) { return task + '|' + text + '|' + answer }
   function addWrong(q) {
@@ -532,6 +570,7 @@ window.Store = (function () {
     addHistory, getReport, stageName,
     addWrong, getWrongBank, removeWrong, clearWrong,
     ZHUANTI_LIBS, getZhuantiView, hideZhuantiItem, restoreZhuantiItem,
-    addZhuantiItem, removeZhuantiAdded, applyZhuantiOverride
+    addZhuantiItem, removeZhuantiAdded, applyZhuantiOverride,
+    hideLogisticsItem, restoreLogisticsItem, addLogisticsItem, removeLogisticsAdded, applyLogisticsOverride
   }
 })()

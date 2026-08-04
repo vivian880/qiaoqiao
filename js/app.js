@@ -28,7 +28,7 @@
     '⚠️ 子弹不够时按钮会变灰，去做任务赚子弹吧！'
 
   const app = document.getElementById('app')
-  let state = { view: 'home', quiz: null, shopTab: 'feed', admin: { tab: 'words', unit: 1, editArticle: -1, editWord: -1, importOpen: false, importUnit: 1, zhuantiLib: 'xjf' }, greetShown: false, rankUpPending: null }
+  let state = { view: 'home', quiz: null, shopTab: 'feed', admin: { tab: 'words', unit: 1, editArticle: -1, editWord: -1, importOpen: false, importUnit: 1, zhuantiLib: 'xjf', logCat: 'len' }, greetShown: false, rankUpPending: null }
 
   // ---------- 工具 ----------
   function rubyfy(s) {
@@ -597,7 +597,7 @@
   // ---------- 渲染：首长指挥部 ----------
   function renderAdmin() {
     const u = Store.getUser()
-    const tabs = [['words', '生字管理'], ['articles', '文章管理'], ['report', '学习报告'], ['progress', '学习进度'], ['score', '积分调整'], ['zhuanti', '特训连题库'], ['wrong', '错题库']]
+    const tabs = [['words', '生字管理'], ['articles', '文章管理'], ['report', '学习报告'], ['progress', '学习进度'], ['score', '积分调整'], ['zhuanti', '特训连题库'], ['logistics', '后勤连题库'], ['wrong', '错题库']]
     let html = `<div class="quiz-head"><div class="quiz-back" data-action="go-home">← 营地</div><span class="quiz-title">🪖 首长指挥部</span><span class="quiz-progress"><span class="pw-btn" data-action="admin-pw">🔑 改密码</span></span></div>`
     html += '<div class="admin-tabs">'
     tabs.forEach(t => html += `<div class="admin-tab ${state.admin.tab === t[0] ? 'on' : ''}" data-action="admin-tab" data-tab="${t[0]}">${t[1]}</div>`)
@@ -608,6 +608,7 @@
     else if (state.admin.tab === 'progress') html += adminProgress()
     else if (state.admin.tab === 'score') html += adminScore()
     else if (state.admin.tab === 'zhuanti') html += adminZhuanti()
+    else if (state.admin.tab === 'logistics') html += adminLogistics()
     else if (state.admin.tab === 'wrong') html += adminWrong()
     html += '</div>'
     app.innerHTML = html
@@ -865,6 +866,53 @@
     </div>`
   }
 
+  // 后勤连题库管理：按 长度/方向/钟表 三个类别展示，可隐藏单题、导入新题、导出、看已隐藏
+  // 说明：后勤题由程序批量生成，同一道题会重复出现多次。这里按「题干」去重展示，
+  // 点隐藏即下架该题干的全部重复实例（隐藏键 = 类别 + 题干）。
+  function adminLogistics() {
+    const CATS = [
+      { key: 'len', name: '长度', cat: 'len' },
+      { key: 'dir', name: '方向', cat: 'dir' },
+      { key: 'clock', name: '钟表', cat: 'clock' }
+    ]
+    const cur = state.admin.logCat || 'len'
+    const meta = CATS.find(c => c.key === cur)
+    const raw = (window.QH && window.QH.getLogisticsPool) ? window.QH.getLogisticsPool(cur) : []
+    const added = (Store.getUser().logisticsAdded && Store.getUser().logisticsAdded[cur]) || []
+    // 按题干去重（保留首次出现），导入题(__added)单独保留
+    const seen = {}, unique = []
+    raw.forEach(it => {
+      if (it.__added != null) { unique.push(it); return }
+      if (seen[it.text]) return
+      seen[it.text] = true; unique.push(it)
+    })
+    const rows = unique.map((it) => {
+      const optStr = (it.others && it.others.length) ? it.others.map(o => esc(o)).join(' / ') : ''
+      const isAdd = it.__added != null
+      const delBtn = isAdd
+        ? `<button class="mini-btn del" data-action="lg-del-added" data-cat="${cur}" data-idx="${it.__added}">🗑 删</button>`
+        : `<button class="mini-btn del" data-action="lg-hide" data-cat="${cur}" data-text="${encodeURIComponent(it.text)}">🚫 隐藏</button>`
+      return `<div class="zt-row"><span class="zt-q">${esc(it.text)}</span><span class="zt-o">${optStr ? optStr + ' ＝ ' + esc(it.correct) : esc(it.correct)}</span>${delBtn}</div>`
+    }).join('')
+    const catOpts = CATS.map(c => `<option value="${c.key}" ${c.key === cur ? 'selected' : ''}>${c.name}</option>`).join('')
+    const sample = '例：{"text":"一本数学书厚大约多少？","correct":"1厘米","others":["1米","1分米","1毫米"]}'
+    return `<div class="zt-box">
+      <div class="zt-tip">📝 这里管理「后勤连·实践题」题库（按题干去重展示）。点「隐藏」可暂时下架某题（不删原库，可恢复）；「导入」可新增题目（粘贴 JSON，每行一条或整组数组，字段 text/correct/others）。</div>
+      <div class="zt-toolbar">
+        <label>类别：<select data-action="lg-cat">${catOpts}</select></label>
+        <button class="add-btn" data-action="lg-export" data-cat="${cur}">⬇️ 导出当前类别（去重）</button>
+        <button class="add-btn" data-action="lg-show-hidden" data-cat="${cur}">👁 看已隐藏并恢复</button>
+      </div>
+      <div class="zt-list">${rows || '<div class="wrongbank-empty">（空）</div>'}</div>
+      <div class="zt-import">
+        <div class="zt-import-title">➕ 导入新题到「${meta.name}」（${esc(sample)}）</div>
+        <textarea class="zt-textarea" data-role="lg-import-text" placeholder="粘贴 JSON，每行一条对象，或一个数组"></textarea>
+        <button class="add-btn" data-action="lg-import" data-cat="${cur}">导入到「${meta.name}」</button>
+        <span class="zt-import-msg" data-role="lg-import-msg"></span>
+      </div>
+    </div>`
+  }
+
   function adminWrong() {
     const wb = Store.getWrongBank()
     if (!wb.length) return '<div class="wrongbank-empty">📭 暂无错题记录</div>'
@@ -1046,6 +1094,59 @@
         case 'wrong-review-10': startReview(10); break
         case 'wrong-review-all': startReview(0); break
         case 'zt-lib': state.admin.zhuantiLib = d.lib; renderAdmin(); break
+        case 'lg-cat': state.admin.logCat = d.cat; renderAdmin(); break
+        case 'lg-hide': {
+          const text = decodeURIComponent(d.text)
+          Store.hideLogisticsItem(d.cat, d.cat + '||' + text); toast('已隐藏该实践题'); renderAdmin(); break
+        }
+        case 'lg-del-added': {
+          Store.removeLogisticsAdded(d.cat, parseInt(d.idx)); toast('已删除导入题'); renderAdmin(); break
+        }
+        case 'lg-show-hidden': {
+          const hidden = (Store.getUser().logisticsHidden && Store.getUser().logisticsHidden[d.cat]) || []
+          if (!hidden.length) { toast('没有已隐藏的题'); break }
+          const restored = hidden.slice()
+          restored.forEach(id => Store.restoreLogisticsItem(d.cat, id))
+          toast('已恢复 ' + restored.length + ' 道隐藏题'); renderAdmin(); break
+        }
+        case 'lg-export': {
+          const pool = (window.QH && window.QH.getLogisticsPool) ? window.QH.getLogisticsPool(d.cat) : []
+          const seen = {}, exp = []
+          pool.forEach(x => {
+            if (x.__added != null) return
+            if (seen[x.text]) return
+            seen[x.text] = true
+            exp.push({ text: x.text, correct: x.correct, others: x.others || [] })
+          })
+          copyToClipboard(JSON.stringify(exp, null, 2))
+          toast('已复制「' + ({ len: '长度', dir: '方向', clock: '钟表' }[d.cat] || d.cat) + '」共 ' + exp.length + ' 题到剪贴板')
+          break
+        }
+        case 'lg-import': {
+          const ta = document.querySelector('[data-role="lg-import-text"]')
+          const msg = document.querySelector('[data-role="lg-import-msg"]')
+          const raw = ta ? ta.value.trim() : ''
+          if (!raw) { if (msg) msg.textContent = '请先粘贴 JSON'; break }
+          let arr
+          try {
+            const fixed = raw.indexOf('[') === 0 ? raw : '[' + raw.split('\n').map(s => s.trim()).filter(Boolean).join(',') + ']'
+            arr = JSON.parse(fixed)
+          } catch (e) { if (msg) msg.textContent = 'JSON 解析失败：' + e.message; break }
+          if (!Array.isArray(arr)) { if (msg) msg.textContent = '需为对象数组'; break }
+          let okN = 0
+          arr.forEach(o => {
+            if (!o || typeof o.text !== 'string' || typeof o.correct !== 'string') return
+            const item = {
+              text: o.text, correct: o.correct,
+              others: Array.isArray(o.others) ? o.others.map(String) : [],
+              _lv: (typeof o._lv === 'number') ? o._lv : 0
+            }
+            Store.addLogisticsItem(d.cat, item); okN++
+          })
+          if (msg) msg.textContent = okN ? ('成功导入 ' + okN + ' 题 ✓') : '没有有效题目（需含 text 与 correct 字段）'
+          if (okN) renderAdmin()
+          break
+        }
         case 'zt-hide': {
           Store.hideZhuantiItem(d.lib, d.id); toast('已隐藏：' + d.id); renderAdmin(); break
         }
@@ -1135,6 +1236,8 @@
         state.admin.importUnit = parseInt(el.value) || 1; renderAdmin()
       } else if (el.dataset.action === 'zt-lib') {
         state.admin.zhuantiLib = el.value; renderAdmin()
+      } else if (el.dataset.action === 'lg-cat') {
+        state.admin.logCat = el.value; renderAdmin()
       }
     })
   }
