@@ -204,7 +204,7 @@
       <button class="big-btn btn-pink shop-btn" data-action="go-shop">🎒 营地物资站</button>
       <div class="play-tip-entry" data-action="show-tip">💡 游玩小建议</div>
       <div class="foot-tip">学习数据存在本机浏览器 · 换设备不互通</div>
-      <div class="ver-tip">离线版 v83</div>
+      <div class="ver-tip">离线版 v84</div>
     `
     // 升级军衔后返回营地：邱少云敬礼（台词 toast 已在结算时弹出）
     if (state.rankUpPending) {
@@ -789,6 +789,7 @@
     const ART_U = [1, 2, 3, 5, 6, 6]
     const RIF_TIERS = ['不进位', '进位', '退位', '填空', '比大小', '连加连减', '两步应用']
     const RIF_U = [1, 3, 5, 6, 7, 7]
+    const au = ART_U[rk.level], ru = RIF_U[rk.level]
     const mathCard = (icon, name, tiers, unlocked) => {
       const chips = tiers.map((t, i) => `<span class="tier ${i < unlocked ? 'on' : 'off'}">${t}</span>`).join('')
       return `<div class="scope-card">
